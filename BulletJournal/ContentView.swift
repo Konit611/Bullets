@@ -10,52 +10,103 @@ import SwiftData
 
 struct ContentView: View {
     @Environment(\.modelContext) private var modelContext
-    @Query private var items: [Item]
+    @State private var selectedTab: Tab = .home
+
+    enum Tab: Hashable {
+        case home
+        case dashboard
+        case settings
+    }
 
     var body: some View {
-        NavigationSplitView {
+        TabView(selection: $selectedTab) {
+            HomeView(modelContext: modelContext)
+                .tabItem {
+                    Label {
+                        Text("tab.home")
+                    } icon: {
+                        Image(systemName: "house.fill")
+                    }
+                }
+                .tag(Tab.home)
+
+            DashboardPlaceholderView()
+                .tabItem {
+                    Label {
+                        Text("tab.dashboard")
+                    } icon: {
+                        Image(systemName: "chart.bar.fill")
+                    }
+                }
+                .tag(Tab.dashboard)
+
+            SettingsPlaceholderView()
+                .tabItem {
+                    Label {
+                        Text("tab.settings")
+                    } icon: {
+                        Image(systemName: "gearshape.fill")
+                    }
+                }
+                .tag(Tab.settings)
+        }
+        .tint(AppColors.primaryText)
+    }
+}
+
+// MARK: - Placeholder Views
+
+struct DashboardPlaceholderView: View {
+    var body: some View {
+        ZStack {
+            AppColors.background
+                .ignoresSafeArea()
+
+            VStack(spacing: 16) {
+                Image(systemName: "chart.bar.fill")
+                    .font(.system(size: 48))
+                    .foregroundStyle(AppColors.secondaryText)
+
+                Text("tab.dashboard")
+                    .font(.title2)
+                    .foregroundStyle(AppColors.primaryText)
+            }
+        }
+    }
+}
+
+struct SettingsPlaceholderView: View {
+    @EnvironmentObject private var localizationManager: LocalizationManager
+
+    var body: some View {
+        NavigationStack {
             List {
-                ForEach(items) { item in
-                    NavigationLink {
-                        Text("Item at \(item.timestamp, format: Date.FormatStyle(date: .numeric, time: .standard))")
+                Section {
+                    Picker(selection: Binding(
+                        get: { localizationManager.currentLanguage },
+                        set: { localizationManager.setLanguage($0) }
+                    )) {
+                        ForEach(SupportedLanguage.allCases) { language in
+                            Text(language.displayName)
+                                .tag(language)
+                        }
                     } label: {
-                        Text(item.timestamp, format: Date.FormatStyle(date: .numeric, time: .standard))
-                    }
-                }
-                .onDelete(perform: deleteItems)
-            }
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    EditButton()
-                }
-                ToolbarItem {
-                    Button(action: addItem) {
-                        Label("Add Item", systemImage: "plus")
+                        Label {
+                            Text("settings.language")
+                        } icon: {
+                            Image(systemName: "globe")
+                        }
                     }
                 }
             }
-        } detail: {
-            Text("Select an item")
-        }
-    }
-
-    private func addItem() {
-        withAnimation {
-            let newItem = Item(timestamp: Date())
-            modelContext.insert(newItem)
-        }
-    }
-
-    private func deleteItems(offsets: IndexSet) {
-        withAnimation {
-            for index in offsets {
-                modelContext.delete(items[index])
-            }
+            .navigationTitle(Text("tab.settings"))
+            .background(AppColors.background)
         }
     }
 }
 
 #Preview {
     ContentView()
-        .modelContainer(for: Item.self, inMemory: true)
+        .modelContainer(for: [Item.self, FocusTask.self, FocusSession.self], inMemory: true)
+        .environmentObject(LocalizationManager.shared)
 }

@@ -10,9 +10,13 @@ import SwiftData
 
 @main
 struct BulletJournalApp: App {
+    @StateObject private var localizationManager = LocalizationManager.shared
+
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
             Item.self,
+            FocusTask.self,
+            FocusSession.self,
         ])
         let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
 
@@ -26,6 +30,11 @@ struct BulletJournalApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .environment(\.locale, localizationManager.effectiveLocale)
+                .environmentObject(localizationManager)
+                .onAppear {
+                    SampleDataSeeder.seedIfNeeded(modelContext: sharedModelContainer.mainContext)
+                }
         }
         .modelContainer(sharedModelContainer)
     }

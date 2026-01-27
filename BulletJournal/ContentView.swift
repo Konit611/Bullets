@@ -10,6 +10,7 @@ import SwiftData
 
 struct ContentView: View {
     @Environment(\.modelContext) private var modelContext
+    @EnvironmentObject private var localizationManager: LocalizationManager
     @State private var selectedTab: Tab = .home
 
     enum Tab: Hashable {
@@ -40,7 +41,7 @@ struct ContentView: View {
                 }
                 .tag(Tab.dashboard)
 
-            SettingsPlaceholderView()
+            SettingsView(localizationManager: localizationManager)
                 .tabItem {
                     Label {
                         Text("tab.settings")
@@ -54,37 +55,6 @@ struct ContentView: View {
     }
 }
 
-// MARK: - Placeholder Views
-
-struct SettingsPlaceholderView: View {
-    @EnvironmentObject private var localizationManager: LocalizationManager
-
-    var body: some View {
-        NavigationStack {
-            List {
-                Section {
-                    Picker(selection: Binding(
-                        get: { localizationManager.currentLanguage },
-                        set: { localizationManager.setLanguage($0) }
-                    )) {
-                        ForEach(SupportedLanguage.allCases) { language in
-                            Text(language.displayName)
-                                .tag(language)
-                        }
-                    } label: {
-                        Label {
-                            Text("settings.language")
-                        } icon: {
-                            Image(systemName: "globe")
-                        }
-                    }
-                }
-            }
-            .navigationTitle(Text("tab.settings"))
-            .background(AppColors.background)
-        }
-    }
-}
 
 #Preview {
     ContentView()

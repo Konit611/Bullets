@@ -8,15 +8,26 @@ import SwiftData
 
 @MainActor
 struct SampleDataSeeder {
-    private static let hasSeededKey = "hasSeededSampleData"
+    private static let hasSeededKey = "hasSeededSampleData_v2"
 
     static func seedIfNeeded(modelContext: ModelContext) {
         // Only seed once
         guard !UserDefaults.standard.bool(forKey: hasSeededKey) else { return }
 
-        let tasks = createSampleTasks()
-        for task in tasks {
+        // Create today's tasks
+        let todayTasks = createSampleTasks()
+        for task in todayTasks {
             modelContext.insert(task)
+        }
+
+        // Create historical data for Dashboard
+        let historicalData = createHistoricalData()
+        for (task, sessions) in historicalData {
+            modelContext.insert(task)
+            for session in sessions {
+                task.focusSessions.append(session)
+                modelContext.insert(session)
+            }
         }
 
         try? modelContext.save()
@@ -67,5 +78,76 @@ struct SampleDataSeeder {
                 endTime: endTime
             )
         }
+    }
+
+    /// Create historical tasks with completed sessions for Dashboard display
+    private static func createHistoricalData() -> [(FocusTask, [FocusSession])] {
+        let calendar = Calendar.current
+        let today = calendar.startOfDay(for: Date())
+
+        // Data for past 14 days
+        // (daysAgo, taskTitle, plannedHours, focusedMinutes)
+        let historicalData: [(Int, String, Int, Int)] = [
+            // Yesterday
+            (1, "Work Session", 8, 180),      // 3h focused out of 8h planned
+            (1, "Side Project", 2, 90),       // 1.5h focused out of 2h planned
+
+            // 2 days ago
+            (2, "Work Session", 8, 240),      // 4h focused
+            (2, "Reading", 1, 45),            // 45m focused
+
+            // 3 days ago
+            (3, "Work Session", 8, 300),      // 5h focused
+            (3, "Exercise", 1, 60),           // 1h focused
+
+            // 4 days ago
+            (4, "Work Session", 8, 120),      // 2h focused
+            (4, "Side Project", 2, 30),       // 30m focused
+
+            // 5 days ago
+            (5, "Work Session", 8, 360),      // 6h focused
+            (5, "Reading", 1, 60),            // 1h focused
+
+            // 6 days ago
+            (6, "Work Session", 8, 200),      // 3h 20m focused
+
+            // 7 days ago (a week ago)
+            (7, "Work Session", 8, 280),      // 4h 40m focused
+            (7, "Side Project", 2, 100),      // 1h 40m focused
+
+            // 10 days ago
+            (10, "Work Session", 8, 150),
+
+            // 14 days ago
+            (14, "Work Session", 8, 220),
+        ]
+
+        var result: [(FocusTask, [FocusSession])] = []
+
+        for (daysAgo, title, plannedHours, focusedMinutes) in historicalData {
+            guard let dayDate = calendar.date(byAdding: .day, value: -daysAgo, to: today),
+                  let startTime = calendar.date(bySettingHour: 9, minute: 0, second: 0, of: dayDate),
+                  let endTime = calendar.date(byAdding: .hour, value: plannedHours, to: startTime) else {
+                continue
+            }
+
+            let task = FocusTask(
+                title: title,
+                startTime: startTime,
+                endTime: endTime,
+                isCompleted: true
+            )
+
+            let session = FocusSession(
+                startedAt: startTime,
+                endedAt: calendar.date(byAdding: .minute, value: focusedMinutes, to: startTime),
+                elapsedSeconds: focusedMinutes * 60,
+                status: .completed
+            )
+
+            result.append((task, [session]))
+        }
+
+        return result
     }
 }

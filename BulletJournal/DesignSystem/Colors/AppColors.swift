@@ -30,4 +30,8 @@ enum AppColors {
     static let chevronBackground = Color(hex: "#F5F0ED")
     static let buttonBackground = Color(hex: "#FEFEFD")
     static let logoBackground = Color(hex: "#F6F6F6")
+
+    // MARK: - Dashboard
+    static let dashboardGreen = Color(hex: "#7DE998")
+    static let emojiBackground = Color.white
 }

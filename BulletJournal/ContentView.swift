@@ -30,7 +30,7 @@ struct ContentView: View {
                 }
                 .tag(Tab.home)
 
-            DashboardPlaceholderView()
+            DashboardView(modelContext: modelContext)
                 .tabItem {
                     Label {
                         Text("tab.dashboard")
@@ -55,25 +55,6 @@ struct ContentView: View {
 }
 
 // MARK: - Placeholder Views
-
-struct DashboardPlaceholderView: View {
-    var body: some View {
-        ZStack {
-            AppColors.background
-                .ignoresSafeArea()
-
-            VStack(spacing: 16) {
-                Image(systemName: "chart.bar.fill")
-                    .font(.system(size: 48))
-                    .foregroundStyle(AppColors.secondaryText)
-
-                Text("tab.dashboard")
-                    .font(.title2)
-                    .foregroundStyle(AppColors.primaryText)
-            }
-        }
-    }
-}
 
 struct SettingsPlaceholderView: View {
     @EnvironmentObject private var localizationManager: LocalizationManager

@@ -94,7 +94,7 @@ struct SettingsView: View {
             icon: "shield",
             title: "settings.privacyPolicy",
             showChevron: presenter.viewModel.isPrivacyPolicyAvailable,
-            action: presenter.viewModel.isPrivacyPolicyAvailable ? openPrivacyPolicy : nil
+            action: presenter.viewModel.isPrivacyPolicyAvailable ? { openPrivacyPolicy() } : nil
         )
     }
 

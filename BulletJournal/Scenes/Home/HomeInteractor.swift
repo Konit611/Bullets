@@ -24,6 +24,7 @@ final class HomeInteractor {
 
     private let taskLoadedSubject = PassthroughSubject<Home.LoadCurrentTask.Response, Never>()
     private let errorSubject = PassthroughSubject<AppError, Never>()
+    private let sleepQualitySubject = PassthroughSubject<Home.SleepQuality.Response, Never>()
 
     var taskLoadedPublisher: AnyPublisher<Home.LoadCurrentTask.Response, Never> {
         taskLoadedSubject.eraseToAnyPublisher()
@@ -43,6 +44,10 @@ final class HomeInteractor {
 
     var soundPublisher: AnyPublisher<AmbientSound, Never> {
         ambientSoundService.currentSoundPublisher
+    }
+
+    var sleepQualityPublisher: AnyPublisher<Home.SleepQuality.Response, Never> {
+        sleepQualitySubject.eraseToAnyPublisher()
     }
 
     var currentElapsedSeconds: Int {
@@ -107,6 +112,34 @@ final class HomeInteractor {
         currentTask = newTask
         let response = Home.LoadCurrentTask.Response(task: newTask)
         taskLoadedSubject.send(response)
+    }
+
+    func checkNeedsSleepQualityPrompt() {
+        let record = fetchTodayDailyRecord()
+        let needsPrompt = record?.sleepQualityEmoji == nil
+        sleepQualitySubject.send(Home.SleepQuality.Response(needsPrompt: needsPrompt))
+    }
+
+    func saveSleepQuality(_ emoji: String) {
+        let today = Calendar.current.startOfDay(for: Date())
+
+        if let existingRecord = fetchTodayDailyRecord() {
+            existingRecord.setSleepQuality(emoji)
+        } else {
+            let newRecord = DailyRecord(date: today, sleepQualityEmoji: emoji)
+            modelContext.insert(newRecord)
+        }
+        saveContext()
+    }
+
+    private func fetchTodayDailyRecord() -> DailyRecord? {
+        let today = Calendar.current.startOfDay(for: Date())
+        let descriptor = FetchDescriptor<DailyRecord>(
+            predicate: #Predicate<DailyRecord> { record in
+                record.date == today
+            }
+        )
+        return try? modelContext.fetch(descriptor).first
     }
 
     // MARK: - Private Timer Methods

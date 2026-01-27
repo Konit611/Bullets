@@ -16,6 +16,9 @@ final class HomePresenter: ObservableObject {
     @Published private(set) var soundViewModel: Home.SoundViewModel = .initial
     @Published private(set) var hasCurrentTask: Bool = false
     @Published private(set) var error: AppError?
+    @Published var showSleepQualityPrompt: Bool = false
+
+    private var needsSleepQualityPrompt: Bool = false
 
     // MARK: - Dependencies
 
@@ -34,6 +37,7 @@ final class HomePresenter: ObservableObject {
 
     func onAppear() {
         interactor.loadCurrentTask()
+        interactor.checkNeedsSleepQualityPrompt()
     }
 
     // MARK: - User Actions
@@ -60,6 +64,20 @@ final class HomePresenter: ObservableObject {
 
     func clearError() {
         error = nil
+    }
+
+    func requestStartTimer() {
+        if needsSleepQualityPrompt {
+            showSleepQualityPrompt = true
+        } else {
+            startTimer()
+        }
+    }
+
+    func selectSleepQuality(_ emoji: String) {
+        interactor.saveSleepQuality(emoji)
+        needsSleepQualityPrompt = false
+        startTimer()
     }
 
     // MARK: - Private Methods
@@ -105,6 +123,14 @@ final class HomePresenter: ObservableObject {
                     selectedSound: sound,
                     displayName: sound.localizedName
                 )
+            }
+            .store(in: &cancellables)
+
+        // Bind sleep quality check
+        interactor.sleepQualityPublisher
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] response in
+                self?.needsSleepQualityPrompt = response.needsPrompt
             }
             .store(in: &cancellables)
     }

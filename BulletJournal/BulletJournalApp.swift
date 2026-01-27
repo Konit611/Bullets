@@ -17,6 +17,7 @@ struct BulletJournalApp: App {
             Item.self,
             FocusTask.self,
             FocusSession.self,
+            DailyRecord.self,
         ])
         let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
 

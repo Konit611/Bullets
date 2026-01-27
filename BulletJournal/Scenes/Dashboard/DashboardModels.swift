@@ -14,7 +14,7 @@ enum Dashboard {
         struct Response {
             let totalFocusSeconds: Int
             let weeklyData: WeeklyData
-            let dailyRecords: [DailyRecord]
+            let dailyRecords: [DailyRecordData]
         }
     }
 
@@ -39,11 +39,12 @@ enum Dashboard {
         }
     }
 
-    struct DailyRecord: Identifiable {
+    struct DailyRecordData: Identifiable {
         let id: UUID
         let date: Date
         let totalFocusSeconds: Int
         let totalPlannedSeconds: Int
+        let moodEmoji: String?
 
         var completionPercentage: Double {
             guard totalPlannedSeconds > 0 else { return 0 }
@@ -54,12 +55,14 @@ enum Dashboard {
             id: UUID = UUID(),
             date: Date,
             totalFocusSeconds: Int,
-            totalPlannedSeconds: Int
+            totalPlannedSeconds: Int,
+            moodEmoji: String? = nil
         ) {
             self.id = id
             self.date = date
             self.totalFocusSeconds = totalFocusSeconds
             self.totalPlannedSeconds = totalPlannedSeconds
+            self.moodEmoji = moodEmoji
         }
     }
 
@@ -103,19 +106,22 @@ enum Dashboard {
 
     struct DailyRecordViewModel: Equatable, Identifiable {
         let id: UUID
+        let date: Date               // For navigation
         let dateString: String       // "1월 25일"
         let timeString: String       // "1h 30m"
         let percentageString: String // "14%"
-        let emoji: String            // "😆"
+        let emoji: String            // User's mood emoji or default
 
         init(
             id: UUID = UUID(),
+            date: Date,
             dateString: String,
             timeString: String,
             percentageString: String,
             emoji: String
         ) {
             self.id = id
+            self.date = date
             self.dateString = dateString
             self.timeString = timeString
             self.percentageString = percentageString

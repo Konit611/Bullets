@@ -8,7 +8,7 @@ import SwiftData
 
 @MainActor
 struct SampleDataSeeder {
-    private static let hasSeededKey = "hasSeededSampleData_v2"
+    private static let hasSeededKey = "hasSeededSampleData_v3"
 
     static func seedIfNeeded(modelContext: ModelContext) {
         // Only seed once
@@ -28,6 +28,12 @@ struct SampleDataSeeder {
                 task.focusSessions.append(session)
                 modelContext.insert(session)
             }
+        }
+
+        // Create DailyRecords for historical data
+        let dailyRecords = createDailyRecords()
+        for record in dailyRecords {
+            modelContext.insert(record)
         }
 
         try? modelContext.save()
@@ -149,5 +155,37 @@ struct SampleDataSeeder {
         }
 
         return result
+    }
+
+    /// Create DailyRecords with mood emojis for historical data
+    private static func createDailyRecords() -> [DailyRecord] {
+        let calendar = Calendar.current
+        let today = calendar.startOfDay(for: Date())
+
+        // (daysAgo, sleepQualityEmoji, moodEmoji, reflectionText)
+        let recordData: [(Int, String, String, String?)] = [
+            (1, "☺️", "😆", "Productive day! Completed all my tasks."),
+            (2, "🙂", "☺️", "Good focus session today."),
+            (3, "😆", "😆", "Best day this week!"),
+            (4, "😑", "🙂", nil),
+            (5, "☺️", "☺️", "Made good progress on the project."),
+            (6, "🙂", "😑", "Tired but managed to get work done."),
+            (7, "😩", "🙂", nil),
+            (10, "☺️", "☺️", nil),
+            (14, "🙂", "😆", "Great start to the week!"),
+        ]
+
+        return recordData.compactMap { (daysAgo, sleepEmoji, moodEmoji, reflection) in
+            guard let dayDate = calendar.date(byAdding: .day, value: -daysAgo, to: today) else {
+                return nil
+            }
+
+            return DailyRecord(
+                date: dayDate,
+                sleepQualityEmoji: sleepEmoji,
+                moodEmoji: moodEmoji,
+                reflectionText: reflection
+            )
+        }
     }
 }

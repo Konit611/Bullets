@@ -60,6 +60,7 @@ struct DailyRecordRow: View {
 #Preview("High Percentage") {
     DailyRecordRow(
         viewModel: Dashboard.DailyRecordViewModel(
+            date: Date(),
             dateString: "1월 25일",
             timeString: "2h 30m",
             percentageString: "80%",
@@ -74,6 +75,7 @@ struct DailyRecordRow: View {
 #Preview("Medium Percentage") {
     DailyRecordRow(
         viewModel: Dashboard.DailyRecordViewModel(
+            date: Date(),
             dateString: "1월 24일",
             timeString: "1h 30m",
             percentageString: "35%",
@@ -85,13 +87,14 @@ struct DailyRecordRow: View {
     .background(AppColors.background)
 }
 
-#Preview("Low Percentage") {
+#Preview("No Mood Set") {
     DailyRecordRow(
         viewModel: Dashboard.DailyRecordViewModel(
+            date: Date(),
             dateString: "1월 23일",
             timeString: "30m",
             percentageString: "10%",
-            emoji: "😑"
+            emoji: "➖"
         ),
         onTap: {}
     )

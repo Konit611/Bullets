@@ -7,7 +7,8 @@ import Foundation
 import Combine
 import SwiftData
 
-protocol DashboardInteractorProtocol {
+@MainActor
+protocol DashboardInteractorProtocol: AnyObject {
     var statisticsLoadedPublisher: AnyPublisher<Dashboard.LoadStatistics.Response, Never> { get }
     func loadStatistics()
 }
@@ -116,7 +117,7 @@ final class DashboardInteractor: DashboardInteractorProtocol {
         from sessions: [FocusSession],
         calendar: Calendar,
         now: Date
-    ) -> [Dashboard.DailyRecord] {
+    ) -> [Dashboard.DailyRecordData] {
         let limit = 30
         guard let startDate = calendar.date(byAdding: .day, value: -limit, to: now) else {
             return []
@@ -136,6 +137,24 @@ final class DashboardInteractor: DashboardInteractorProtocol {
         } catch {
             tasks = []
         }
+
+        // Fetch DailyRecords for mood emoji
+        let dailyRecords: [DailyRecord]
+        do {
+            let recordDescriptor = FetchDescriptor<DailyRecord>(
+                predicate: #Predicate<DailyRecord> { record in
+                    record.date >= startDate
+                }
+            )
+            dailyRecords = try modelContext.fetch(recordDescriptor)
+        } catch {
+            dailyRecords = []
+        }
+
+        // Create lookup for mood emojis
+        let moodEmojiLookup = Dictionary(
+            uniqueKeysWithValues: dailyRecords.map { ($0.date, $0.moodEmoji) }
+        )
 
         // Group by day
         var dailyRecordsDict: [Date: (focusSeconds: Int, plannedSeconds: Int)] = [:]
@@ -162,10 +181,11 @@ final class DashboardInteractor: DashboardInteractorProtocol {
         return dailyRecordsDict
             .filter { $0.value.focusSeconds > 0 || $0.value.plannedSeconds > 0 }
             .map { date, values in
-                Dashboard.DailyRecord(
+                Dashboard.DailyRecordData(
                     date: date,
                     totalFocusSeconds: values.focusSeconds,
-                    totalPlannedSeconds: values.plannedSeconds
+                    totalPlannedSeconds: values.plannedSeconds,
+                    moodEmoji: moodEmojiLookup[date]
                 )
             }
             .sorted { $0.date > $1.date }

@@ -74,29 +74,22 @@ final class DashboardPresenter: ObservableObject {
         return Dashboard.WeeklyChartViewModel(bars: bars)
     }
 
-    private func mapDailyRecords(_ records: [Dashboard.DailyRecord]) -> [Dashboard.DailyRecordViewModel] {
+    private func mapDailyRecords(_ records: [Dashboard.DailyRecordData]) -> [Dashboard.DailyRecordViewModel] {
         records.map { record in
             let percentage = record.completionPercentage
             let percentageInt = Int(percentage * 100)
 
+            // Use user's mood emoji if set, otherwise show default
+            let emoji = record.moodEmoji ?? "➖"
+
             return Dashboard.DailyRecordViewModel(
                 id: record.id,
+                date: record.date,
                 dateString: FocusTimeFormatter.formatDailyDate(record.date),
                 timeString: FocusTimeFormatter.formatShortTime(record.totalFocusSeconds),
                 percentageString: "\(percentageInt)%",
-                emoji: emojiForPercentage(percentage)
+                emoji: emoji
             )
-        }
-    }
-
-    private func emojiForPercentage(_ percentage: Double) -> String {
-        switch percentage {
-        case 0..<0.2:
-            return "😑"
-        case 0.2..<0.5:
-            return "☺️"
-        default:
-            return "😆"
         }
     }
 }

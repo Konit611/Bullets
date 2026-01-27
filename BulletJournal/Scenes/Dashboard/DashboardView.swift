@@ -8,47 +8,56 @@ import SwiftData
 
 struct DashboardView: View {
     @StateObject private var presenter: DashboardPresenter
+    @State private var navigationPath = NavigationPath()
+
+    private let modelContext: ModelContext
 
     init(modelContext: ModelContext) {
+        self.modelContext = modelContext
         let interactor = DashboardInteractor(modelContext: modelContext)
         _presenter = StateObject(wrappedValue: DashboardPresenter(interactor: interactor))
     }
 
     var body: some View {
-        ScrollView(showsIndicators: false) {
-            VStack(alignment: .leading, spacing: 20) {
-                // Title
-                Text("dashboard.title")
-                    .font(.system(size: 32, weight: .bold))
-                    .foregroundStyle(AppColors.primaryText)
+        NavigationStack(path: $navigationPath) {
+            ScrollView(showsIndicators: false) {
+                VStack(alignment: .leading, spacing: 20) {
+                    // Title
+                    Text("dashboard.title")
+                        .font(.system(size: 32, weight: .bold))
+                        .foregroundStyle(AppColors.primaryText)
 
-                // Total Focus Time Section
-                sectionLabel("dashboard.totalFocusTime")
-                TotalFocusTimeCard(viewModel: presenter.totalFocusTimeViewModel)
+                    // Total Focus Time Section
+                    sectionLabel("dashboard.totalFocusTime")
+                    TotalFocusTimeCard(viewModel: presenter.totalFocusTimeViewModel)
 
-                // Weekly Chart Section
-                sectionLabel("dashboard.focusTrend")
-                WeeklyChartCard(viewModel: presenter.weeklyChartViewModel)
+                    // Weekly Chart Section
+                    sectionLabel("dashboard.focusTrend")
+                    WeeklyChartCard(viewModel: presenter.weeklyChartViewModel)
 
-                // Daily Records Section
-                sectionLabel("dashboard.dailyRecords")
-                if presenter.dailyRecordViewModels.isEmpty {
-                    emptyRecordsCard
-                } else {
-                    ForEach(presenter.dailyRecordViewModels) { record in
-                        DailyRecordRow(viewModel: record) {
-                            // TODO: Navigate to daily detail
+                    // Daily Records Section
+                    sectionLabel("dashboard.dailyRecords")
+                    if presenter.dailyRecordViewModels.isEmpty {
+                        emptyRecordsCard
+                    } else {
+                        ForEach(presenter.dailyRecordViewModels) { record in
+                            DailyRecordRow(viewModel: record) {
+                                navigationPath.append(record.date)
+                            }
                         }
                     }
                 }
+                .padding(.horizontal, 15)
+                .padding(.top, 10)
+                .padding(.bottom, 20)
             }
-            .padding(.horizontal, 15)
-            .padding(.top, 10)
-            .padding(.bottom, 20)
-        }
-        .background(AppColors.background)
-        .onAppear {
-            presenter.onAppear()
+            .background(AppColors.background)
+            .navigationDestination(for: Date.self) { date in
+                DailyRecordDetailView(date: date, modelContext: modelContext)
+            }
+            .onAppear {
+                presenter.onAppear()
+            }
         }
     }
 

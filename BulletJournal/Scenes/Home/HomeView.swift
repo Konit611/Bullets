@@ -40,7 +40,7 @@ struct HomeView: View {
                     viewModel: presenter.timerViewModel,
                     soundViewModel: presenter.soundViewModel,
                     isEnabled: presenter.hasCurrentTask,
-                    onStart: presenter.startTimer,
+                    onStart: presenter.requestStartTimer,
                     onPause: presenter.pauseTimer,
                     onResume: presenter.resumeTimer,
                     onStop: presenter.stopTimer,
@@ -63,6 +63,12 @@ struct HomeView: View {
                 selectedSound: $selectedSound,
                 isPresented: $showSoundPicker,
                 onSoundSelected: presenter.selectSound
+            )
+        }
+        .sheet(isPresented: $presenter.showSleepQualityPrompt) {
+            SleepQualityPromptView(
+                isPresented: $presenter.showSleepQualityPrompt,
+                onSleepQualitySelected: presenter.selectSleepQuality
             )
         }
         .alert(

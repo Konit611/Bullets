@@ -52,6 +52,12 @@ enum Home {
         }
     }
 
+    enum SleepQuality {
+        struct Response {
+            let needsPrompt: Bool
+        }
+    }
+
     // MARK: - View Models
 
     struct TaskCardViewModel: Equatable {

@@ -17,6 +17,8 @@ final class HomePresenter: ObservableObject {
     @Published private(set) var hasCurrentTask: Bool = false
     @Published private(set) var error: AppError?
     @Published var showSleepQualityPrompt: Bool = false
+    @Published var showFocusView: Bool = false
+    @Published var showScreenTimePermissionAlert: Bool = false
 
     private var needsSleepQualityPrompt: Bool = false
 
@@ -42,20 +44,30 @@ final class HomePresenter: ObservableObject {
 
     // MARK: - User Actions
 
-    func startTimer() {
+    private func startTimer() {
         interactor.handleTimerAction(.start)
+        showFocusView = true
     }
 
     func pauseTimer() {
         interactor.handleTimerAction(.pause)
+        // showFocusView 유지 - 집중화면에서 pause/resume
     }
 
     func resumeTimer() {
+        // 홈 화면에서 호출 시 - 집중화면으로 이동
+        interactor.handleTimerAction(.resume)
+        showFocusView = true
+    }
+
+    func resumeTimerInFocus() {
+        // 집중화면에서 호출 시 - 화면 유지
         interactor.handleTimerAction(.resume)
     }
 
     func stopTimer() {
         interactor.handleTimerAction(.stop)
+        showFocusView = false
     }
 
     func selectSound(_ sound: AmbientSound) {
@@ -67,6 +79,28 @@ final class HomePresenter: ObservableObject {
     }
 
     func requestStartTimer() {
+        Task {
+            await requestStartTimerAsync()
+        }
+    }
+
+    private func requestStartTimerAsync() async {
+        // 1. Screen Time 권한 확인
+        switch interactor.screenTimeAuthorizationStatus {
+        case .notDetermined:
+            let granted = await interactor.requestScreenTimeAuthorization()
+            if !granted {
+                showScreenTimePermissionAlert = true
+                return
+            }
+        case .denied:
+            showScreenTimePermissionAlert = true
+            return
+        case .approved:
+            break
+        }
+
+        // 2. 수면 품질 프롬프트 확인
         if needsSleepQualityPrompt {
             showSleepQualityPrompt = true
         } else {
@@ -83,9 +117,10 @@ final class HomePresenter: ObservableObject {
     // MARK: - Private Methods
 
     private func bindInteractor() {
+        // Note: All publishers are from @MainActor services, so receive(on:) is not needed
+
         // Bind task loaded
         interactor.taskLoadedPublisher
-            .receive(on: DispatchQueue.main)
             .sink { [weak self] response in
                 self?.presentCurrentTask(response)
             }
@@ -93,7 +128,6 @@ final class HomePresenter: ObservableObject {
 
         // Bind errors
         interactor.errorPublisher
-            .receive(on: DispatchQueue.main)
             .sink { [weak self] appError in
                 self?.error = appError
             }
@@ -101,7 +135,6 @@ final class HomePresenter: ObservableObject {
 
         // Bind timer tick
         interactor.timerTickPublisher
-            .receive(on: DispatchQueue.main)
             .sink { [weak self] elapsedSeconds in
                 self?.handleTimerTick(elapsedSeconds: elapsedSeconds)
             }
@@ -109,7 +142,6 @@ final class HomePresenter: ObservableObject {
 
         // Bind timer state
         interactor.timerStatePublisher
-            .receive(on: DispatchQueue.main)
             .sink { [weak self] state in
                 self?.handleTimerStateChange(state: state)
             }
@@ -117,7 +149,6 @@ final class HomePresenter: ObservableObject {
 
         // Bind sound changes
         interactor.soundPublisher
-            .receive(on: DispatchQueue.main)
             .sink { [weak self] sound in
                 self?.soundViewModel = Home.SoundViewModel(
                     selectedSound: sound,
@@ -128,7 +159,6 @@ final class HomePresenter: ObservableObject {
 
         // Bind sleep quality check
         interactor.sleepQualityPublisher
-            .receive(on: DispatchQueue.main)
             .sink { [weak self] response in
                 self?.needsSleepQualityPrompt = response.needsPrompt
             }

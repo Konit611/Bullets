@@ -14,6 +14,7 @@ final class HomeInteractor {
     private let modelContext: ModelContext
     private let timerService: TimerServiceProtocol
     private let ambientSoundService: AmbientSoundServiceProtocol
+    private let screenTimeService: ScreenTimeService
 
     // MARK: - State
 
@@ -59,11 +60,13 @@ final class HomeInteractor {
     init(
         modelContext: ModelContext,
         timerService: TimerServiceProtocol,
-        ambientSoundService: AmbientSoundServiceProtocol
+        ambientSoundService: AmbientSoundServiceProtocol,
+        screenTimeService: ScreenTimeService = .shared
     ) {
         self.modelContext = modelContext
         self.timerService = timerService
         self.ambientSoundService = ambientSoundService
+        self.screenTimeService = screenTimeService
     }
 
     // MARK: - Use Cases
@@ -84,7 +87,7 @@ final class HomeInteractor {
             taskLoadedSubject.send(response)
         } catch {
             currentTask = nil
-            errorSubject.send(.dataNotFound)
+            errorSubject.send(.fetchFailed(error.localizedDescription))
         }
     }
 
@@ -142,6 +145,16 @@ final class HomeInteractor {
         return try? modelContext.fetch(descriptor).first
     }
 
+    // MARK: - Screen Time Authorization
+
+    var screenTimeAuthorizationStatus: ScreenTimeService.AuthorizationStatus {
+        screenTimeService.authorizationStatus
+    }
+
+    func requestScreenTimeAuthorization() async -> Bool {
+        await screenTimeService.requestAuthorization()
+    }
+
     // MARK: - Private Timer Methods
 
     private func startTimer() {
@@ -149,6 +162,9 @@ final class HomeInteractor {
             errorSubject.send(.dataNotFound)
             return
         }
+
+        // Screen Time Shield 활성화
+        screenTimeService.enableFocusShield()
 
         let session = FocusSession(startedAt: Date())
         currentSession = session
@@ -169,6 +185,7 @@ final class HomeInteractor {
         session.elapsedSeconds = timerService.elapsedSeconds
         session.pause()
 
+        // Shield는 유지 (pause 상태에서도 다른 앱 차단)
         saveContext()
     }
 
@@ -180,6 +197,7 @@ final class HomeInteractor {
 
         timerService.resume()
         session.resume()
+        saveContext()
     }
 
     private func stopTimer() {
@@ -192,6 +210,9 @@ final class HomeInteractor {
         session.elapsedSeconds = totalSeconds
         session.complete()
         currentSession = nil
+
+        // Screen Time Shield 해제
+        screenTimeService.disableFocusShield()
 
         saveContext()
     }

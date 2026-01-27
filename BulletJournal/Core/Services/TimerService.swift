@@ -7,14 +7,21 @@ import Foundation
 import Combine
 import UIKit
 
+@MainActor
 final class TimerService: TimerServiceProtocol {
+
+    // MARK: - Public State
+
     private(set) var state: TimerState = .idle
     private(set) var elapsedSeconds: Int = 0
+
+    // MARK: - Private State
 
     private var timer: Timer?
     private var startedAt: Date?
     private var accumulatedSeconds: Int = 0
-    private var backgroundTaskID: UIBackgroundTaskIdentifier = .invalid
+
+    // MARK: - Publishers
 
     private let stateSubject = CurrentValueSubject<TimerState, Never>(.idle)
     private let tickSubject = PassthroughSubject<Int, Never>()
@@ -27,14 +34,18 @@ final class TimerService: TimerServiceProtocol {
         tickSubject.eraseToAnyPublisher()
     }
 
+    // MARK: - Initialization
+
     init() {
         setupNotifications()
     }
 
     deinit {
         timer?.invalidate()
-        removeNotifications()
+        NotificationCenter.default.removeObserver(self)
     }
+
+    // MARK: - Public Methods
 
     func start() {
         guard state == .idle else { return }
@@ -46,7 +57,6 @@ final class TimerService: TimerServiceProtocol {
         elapsedSeconds = 0
 
         startTimer()
-        beginBackgroundTask()
     }
 
     func pause() {
@@ -71,6 +81,9 @@ final class TimerService: TimerServiceProtocol {
         startedAt = Date()
 
         startTimer()
+
+        // Send immediate tick so UI updates without waiting 1 second
+        tickSubject.send(elapsedSeconds)
     }
 
     func stop() -> Int {
@@ -86,8 +99,6 @@ final class TimerService: TimerServiceProtocol {
         state = .idle
         stateSubject.send(state)
 
-        endBackgroundTask()
-
         return totalSeconds
     }
 
@@ -101,8 +112,6 @@ final class TimerService: TimerServiceProtocol {
         state = .idle
         stateSubject.send(state)
         tickSubject.send(0)
-
-        endBackgroundTask()
     }
 
     // MARK: - Private Methods
@@ -110,7 +119,9 @@ final class TimerService: TimerServiceProtocol {
     private func startTimer() {
         timer?.invalidate()
         let newTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
-            self?.tick()
+            Task { @MainActor in
+                self?.tick()
+            }
         }
         RunLoop.current.add(newTimer, forMode: .common)
         timer = newTimer
@@ -130,21 +141,6 @@ final class TimerService: TimerServiceProtocol {
         elapsedSeconds = accumulatedSeconds + currentInterval
     }
 
-    // MARK: - Background Task Handling
-
-    private func beginBackgroundTask() {
-        backgroundTaskID = UIApplication.shared.beginBackgroundTask { [weak self] in
-            self?.endBackgroundTask()
-        }
-    }
-
-    private func endBackgroundTask() {
-        if backgroundTaskID != .invalid {
-            UIApplication.shared.endBackgroundTask(backgroundTaskID)
-            backgroundTaskID = .invalid
-        }
-    }
-
     // MARK: - App Lifecycle Notifications
 
     private func setupNotifications() {
@@ -162,18 +158,33 @@ final class TimerService: TimerServiceProtocol {
         )
     }
 
-    private func removeNotifications() {
-        NotificationCenter.default.removeObserver(self)
+    @objc private func appDidEnterBackground() {
+        // Use assumeIsolated to avoid async Task race condition
+        // NotificationCenter callbacks on main thread when observer is on main
+        Task { @MainActor [weak self] in
+            guard let self else { return }
+            self.handleBackgroundTransition()
+        }
     }
 
-    @objc private func appDidEnterBackground() {
+    @objc private func appWillEnterForeground() {
+        Task { @MainActor [weak self] in
+            guard let self else { return }
+            self.handleForegroundTransition()
+        }
+    }
+
+    private func handleBackgroundTransition() {
         guard state == .running else { return }
+        // Timer만 정지, 상태는 유지
+        // Shield가 활성화되어 있으므로 백그라운드 = 화면 잠금
         timer?.invalidate()
         timer = nil
     }
 
-    @objc private func appWillEnterForeground() {
+    private func handleForegroundTransition() {
         guard state == .running else { return }
+        // 경과 시간 계산 후 타이머 재시작
         updateElapsedTime()
         tickSubject.send(elapsedSeconds)
         startTimer()

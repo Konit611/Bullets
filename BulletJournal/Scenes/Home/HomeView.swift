@@ -72,19 +72,47 @@ struct HomeView: View {
             )
         }
         .alert(
-            "Error",
+            Text("Error"),
             isPresented: .init(
                 get: { presenter.error != nil },
                 set: { if !$0 { presenter.clearError() } }
             )
         ) {
-            Button("OK") {
+            Button(String(localized: "OK")) {
                 presenter.clearError()
             }
         } message: {
             if let error = presenter.error {
                 Text(error.localizedDescription)
             }
+        }
+        .fullScreenCover(isPresented: $presenter.showFocusView) {
+            FocusView(
+                presenter: presenter,
+                onStop: {
+                    presenter.stopTimer()
+                },
+                onSoundTapped: {
+                    showSoundPicker = true
+                }
+            )
+            .sheet(isPresented: $showSoundPicker) {
+                SoundPickerView(
+                    selectedSound: $selectedSound,
+                    isPresented: $showSoundPicker,
+                    onSoundSelected: presenter.selectSound
+                )
+            }
+        }
+        .alert(
+            Text("focus.screenTime.permissionTitle"),
+            isPresented: $presenter.showScreenTimePermissionAlert
+        ) {
+            Button(String(localized: "OK")) {
+                presenter.showScreenTimePermissionAlert = false
+            }
+        } message: {
+            Text("focus.screenTime.permissionMessage")
         }
     }
 

@@ -12,6 +12,7 @@ enum TimerState: Equatable, Sendable {
     case paused
 }
 
+@MainActor
 protocol TimerServiceProtocol: AnyObject {
     var state: TimerState { get }
     var elapsedSeconds: Int { get }

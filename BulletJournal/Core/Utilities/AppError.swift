@@ -7,6 +7,7 @@ import Foundation
 
 enum AppError: Error, LocalizedError, Equatable {
     case dataNotFound
+    case fetchFailed(String)
     case saveFailed(String)
     case timerAlreadyRunning
     case timerNotRunning
@@ -18,6 +19,8 @@ enum AppError: Error, LocalizedError, Equatable {
         switch self {
         case .dataNotFound:
             return String(localized: "error.dataNotFound")
+        case .fetchFailed(let detail):
+            return String(localized: "error.fetchFailed \(detail)")
         case .saveFailed(let detail):
             return String(localized: "error.saveFailed \(detail)")
         case .timerAlreadyRunning:
@@ -37,6 +40,8 @@ enum AppError: Error, LocalizedError, Equatable {
         switch (lhs, rhs) {
         case (.dataNotFound, .dataNotFound):
             return true
+        case (.fetchFailed(let l), .fetchFailed(let r)):
+            return l == r
         case (.saveFailed(let l), .saveFailed(let r)):
             return l == r
         case (.timerAlreadyRunning, .timerAlreadyRunning):

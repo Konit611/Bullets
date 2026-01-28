@@ -76,7 +76,7 @@ enum Home {
             endTime: "",
             duration: "",
             progressPercentage: 0,
-            focusedTimeDisplay: ""
+            focusedTimeDisplay: "00:00"
         )
     }
 

@@ -18,19 +18,18 @@ final class HomePresenter: ObservableObject {
     @Published private(set) var error: AppError?
     @Published var showSleepQualityPrompt: Bool = false
     @Published var showFocusView: Bool = false
-    @Published var showScreenTimePermissionAlert: Bool = false
 
     private var needsSleepQualityPrompt: Bool = false
 
     // MARK: - Dependencies
 
-    private let interactor: HomeInteractor
+    private let interactor: HomeInteractorProtocol
 
     private var cancellables = Set<AnyCancellable>()
 
     // MARK: - Initialization
 
-    init(interactor: HomeInteractor) {
+    init(interactor: HomeInteractorProtocol) {
         self.interactor = interactor
         bindInteractor()
     }
@@ -79,28 +78,7 @@ final class HomePresenter: ObservableObject {
     }
 
     func requestStartTimer() {
-        Task {
-            await requestStartTimerAsync()
-        }
-    }
-
-    private func requestStartTimerAsync() async {
-        // 1. Screen Time 권한 확인
-        switch interactor.screenTimeAuthorizationStatus {
-        case .notDetermined:
-            let granted = await interactor.requestScreenTimeAuthorization()
-            if !granted {
-                showScreenTimePermissionAlert = true
-                return
-            }
-        case .denied:
-            showScreenTimePermissionAlert = true
-            return
-        case .approved:
-            break
-        }
-
-        // 2. 수면 품질 프롬프트 확인
+        // 수면 품질 프롬프트 확인
         if needsSleepQualityPrompt {
             showSleepQualityPrompt = true
         } else {
@@ -204,7 +182,12 @@ final class HomePresenter: ObservableObject {
     }
 
     private func mapToTaskViewModel(_ task: FocusTask, additionalElapsed: Int = 0) -> Home.TaskCardViewModel {
-        let totalFocused = task.totalFocusedTime + TimeInterval(additionalElapsed)
+        // additionalElapsed가 0보다 크면 타이머가 실행 중이고,
+        // 이미 이전 세션 누적 시간을 포함하고 있음
+        let totalFocused = additionalElapsed > 0
+            ? TimeInterval(additionalElapsed)
+            : task.totalFocusedTime
+
         let progress = task.plannedDuration > 0
             ? min(totalFocused / task.plannedDuration, 1.0)
             : 0
@@ -229,10 +212,11 @@ final class HomePresenter: ObservableObject {
     private func calculateProgress(elapsed: Int, task: FocusTask?) -> Double {
         guard let task, task.plannedDuration > 0 else { return 0 }
 
-        let previousSessions = task.focusSessions
-            .filter { $0.status == .completed }
-            .reduce(0) { $0 + TimeInterval($1.elapsedSeconds) }
-        let totalElapsed = previousSessions + TimeInterval(elapsed)
+        // elapsed가 0보다 크면 타이머가 실행 중이고,
+        // 이미 이전 세션 누적 시간을 포함하고 있음
+        let totalElapsed = elapsed > 0
+            ? TimeInterval(elapsed)
+            : task.totalFocusedTime
 
         return min(totalElapsed / task.plannedDuration, 1.0)
     }

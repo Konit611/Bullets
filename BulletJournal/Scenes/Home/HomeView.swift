@@ -8,13 +8,16 @@ import SwiftData
 
 struct HomeView: View {
     @StateObject private var presenter: HomePresenter
+    @State private var navigateToDailyPlan = false
     @State private var showSoundPicker = false
-    @State private var selectedSound: AmbientSound = .none
+
+    private let modelContext: ModelContext
 
     init(
         modelContext: ModelContext,
         serviceContainer: ServiceContainer = .shared
     ) {
+        self.modelContext = modelContext
         let interactor = HomeInteractor(
             modelContext: modelContext,
             timerService: serviceContainer.timerService,
@@ -32,21 +35,18 @@ struct HomeView: View {
                     viewModel: presenter.taskViewModel,
                     hasTask: presenter.hasCurrentTask,
                     onChevronTapped: {
-                        // TODO: Navigate to task detail
+                        navigateToDailyPlan = true
                     }
                 )
 
-                TimerCardView(
-                    viewModel: presenter.timerViewModel,
-                    soundViewModel: presenter.soundViewModel,
+                StartFocusCard(
+                    timerState: presenter.timerViewModel.state,
+                    focusedTimeDisplay: presenter.taskViewModel.focusedTimeDisplay,
+                    soundName: presenter.soundViewModel.displayName,
                     isEnabled: presenter.hasCurrentTask,
                     onStart: presenter.requestStartTimer,
-                    onPause: presenter.pauseTimer,
                     onResume: presenter.resumeTimer,
-                    onStop: presenter.stopTimer,
-                    onSoundTapped: {
-                        showSoundPicker = true
-                    }
+                    onSoundTapped: { showSoundPicker = true }
                 )
             }
             .padding(.horizontal, 15)
@@ -54,13 +54,24 @@ struct HomeView: View {
             .padding(.bottom, 20)
         }
         .background(AppColors.background)
+        .navigationDestination(isPresented: $navigateToDailyPlan) {
+            DailyPlanView(date: Date(), modelContext: modelContext)
+        }
         .onAppear {
             presenter.onAppear()
-            selectedSound = presenter.soundViewModel.selectedSound
+        }
+        .onChange(of: navigateToDailyPlan) { _, isNavigating in
+            if !isNavigating {
+                // Returned from DailyPlan - reload current task
+                presenter.onAppear()
+            }
         }
         .sheet(isPresented: $showSoundPicker) {
             SoundPickerView(
-                selectedSound: $selectedSound,
+                selectedSound: .init(
+                    get: { presenter.soundViewModel.selectedSound },
+                    set: { _ in }
+                ),
                 isPresented: $showSoundPicker,
                 onSoundSelected: presenter.selectSound
             )
@@ -91,28 +102,8 @@ struct HomeView: View {
                 presenter: presenter,
                 onStop: {
                     presenter.stopTimer()
-                },
-                onSoundTapped: {
-                    showSoundPicker = true
                 }
             )
-            .sheet(isPresented: $showSoundPicker) {
-                SoundPickerView(
-                    selectedSound: $selectedSound,
-                    isPresented: $showSoundPicker,
-                    onSoundSelected: presenter.selectSound
-                )
-            }
-        }
-        .alert(
-            Text("focus.screenTime.permissionTitle"),
-            isPresented: $presenter.showScreenTimePermissionAlert
-        ) {
-            Button(String(localized: "OK")) {
-                presenter.showScreenTimePermissionAlert = false
-            }
-        } message: {
-            Text("focus.screenTime.permissionMessage")
         }
     }
 
@@ -136,7 +127,7 @@ struct HomeView: View {
 
 #Preview {
     let config = ModelConfiguration(isStoredInMemoryOnly: true)
-    let container = try! ModelContainer(for: FocusTask.self, FocusSession.self, configurations: config)
+    let container = try! ModelContainer(for: FocusTask.self, FocusSession.self, DailyRecord.self, configurations: config)
 
     let calendar = Calendar.current
     let now = Date()
@@ -150,5 +141,7 @@ struct HomeView: View {
     )
     container.mainContext.insert(task)
 
-    return HomeView(modelContext: container.mainContext)
+    return NavigationStack {
+        HomeView(modelContext: container.mainContext)
+    }
 }

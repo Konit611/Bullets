@@ -34,4 +34,20 @@ enum AppColors {
     // MARK: - Dashboard
     static let dashboardGreen = Color(hex: "#7DE998")
     static let emojiBackground = Color.white
+
+    // MARK: - Focus Card
+    static let focusCardCircle = Color(hex: "#FEFEFD")
+    static let focusInnerShadow = Color(red: 234/255, green: 111/255, blue: 111/255).opacity(0.25)
+    static let timerText = Color(hex: "#373737")
+
+    // MARK: - Task Block
+    static let taskBlockBackground = Color(hex: "#95F2AC").opacity(0.8)
+    static let taskBlockAccent = Color(hex: "#72E78F")
+
+    // MARK: - Sleep Record
+    static let selectedEmojiBackground = Color(hex: "#F5A623")
+    static let timePickerBackground = Color(hex: "#F5F0ED")
+
+    // MARK: - Current Time Indicator
+    static let currentTimeIndicator = Color(hex: "#FF0B0B")
 }

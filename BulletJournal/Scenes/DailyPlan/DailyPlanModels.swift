@@ -1,0 +1,183 @@
+//
+//  DailyPlanModels.swift
+//  BulletJournal
+//
+
+import Foundation
+
+enum DailyPlan {
+    // MARK: - Configuration
+
+    enum Configuration {
+        static let hourHeight: CGFloat = 66
+        static let defaultWakeHour: Int = 7
+        static let defaultTimelineEndHour: Int = 23      // Timeline ends at this hour
+        static let defaultBedTimePickerHour: Int = 22    // Default bedtime in DatePicker
+        static let sleepEmojis = ["😩", "😑", "🙂", "☺️", "😆"]
+    }
+
+    // MARK: - Load Use Case
+
+    enum LoadDailyPlan {
+        struct Response {
+            let date: Date
+            let sleepRecord: SleepRecordData?
+            let tasks: [TaskData]
+            let needsSleepRecord: Bool
+        }
+    }
+
+    // MARK: - Save Task Use Case
+
+    enum SaveTask {
+        struct Request {
+            let id: UUID?
+            let title: String
+            let startTime: Date
+            let endTime: Date
+        }
+    }
+
+    // MARK: - Domain Models
+
+    struct SleepRecordData: Equatable {
+        let bedTime: Date?
+        let wakeTime: Date?
+        let sleepQualityEmoji: String?
+
+        static let empty = SleepRecordData(bedTime: nil, wakeTime: nil, sleepQualityEmoji: nil)
+    }
+
+    struct TaskData: Identifiable, Equatable {
+        let id: UUID
+        let title: String
+        let startTime: Date
+        let endTime: Date
+        let isCompleted: Bool
+        let totalFocusedTime: TimeInterval
+        let plannedDuration: TimeInterval
+
+        var progressPercentage: Double {
+            guard plannedDuration > 0 else { return 0 }
+            return min(totalFocusedTime / plannedDuration, 1.0)
+        }
+    }
+
+    // MARK: - ViewModels
+
+    struct ViewModel: Equatable {
+        let dateString: String
+        let sleepRecord: SleepRecordViewModel?
+        let needsSleepRecord: Bool
+        let timelineRows: [TimelineRowViewModel]
+        let taskBlocks: [TaskBlockViewModel]
+        let currentTimePosition: CGFloat?
+        let currentTimeString: String?
+        let wakeHour: Int
+        let bedHour: Int
+
+        static let empty = ViewModel(
+            dateString: "",
+            sleepRecord: nil,
+            needsSleepRecord: true,
+            timelineRows: [],
+            taskBlocks: [],
+            currentTimePosition: nil,
+            currentTimeString: nil,
+            wakeHour: Configuration.defaultWakeHour,
+            bedHour: Configuration.defaultTimelineEndHour
+        )
+    }
+
+    struct SleepRecordViewModel: Equatable {
+        let bedTimeString: String
+        let wakeTimeString: String
+        let sleepQualityEmoji: String?
+        let bedTime: Date?
+        let wakeTime: Date?
+
+        static let empty = SleepRecordViewModel(
+            bedTimeString: "--:--",
+            wakeTimeString: "--:--",
+            sleepQualityEmoji: nil,
+            bedTime: nil,
+            wakeTime: nil
+        )
+    }
+
+    struct TimelineRowViewModel: Identifiable, Equatable {
+        let id: UUID
+        let hour: Int
+        let timeLabel: String
+        let yPosition: CGFloat
+
+        init(id: UUID = UUID(), hour: Int, timeLabel: String, yPosition: CGFloat) {
+            self.id = id
+            self.hour = hour
+            self.timeLabel = timeLabel
+            self.yPosition = yPosition
+        }
+    }
+
+    struct TaskBlockViewModel: Identifiable, Equatable {
+        let id: UUID
+        let title: String
+        let startTimeString: String
+        let endTimeString: String
+        let yPosition: CGFloat
+        let height: CGFloat
+        let isCurrentTask: Bool
+        let progressPercentage: Double
+    }
+
+    // MARK: - Task Edit Form
+
+    struct TaskFormData: Equatable {
+        var id: UUID?
+        var title: String
+        var startTime: Date
+        var endTime: Date
+
+        var isValid: Bool {
+            !title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty &&
+            endTime > startTime
+        }
+
+        static func empty(for date: Date) -> TaskFormData {
+            let calendar = Calendar.current
+            let now = Date()
+            let currentHour = calendar.component(.hour, from: now)
+            let startTime = calendar.date(bySettingHour: currentHour, minute: 0, second: 0, of: date) ?? date
+            let endTime = calendar.date(byAdding: .hour, value: 1, to: startTime) ?? date
+
+            return TaskFormData(
+                id: nil,
+                title: "",
+                startTime: startTime,
+                endTime: endTime
+            )
+        }
+    }
+
+    // MARK: - Error
+
+    enum DailyPlanError: Error, LocalizedError {
+        case timeConflict
+        case invalidTimeSlot
+        case saveFailed(Error)
+        case fetchFailed(Error)
+
+        var errorDescription: String? {
+            switch self {
+            case .timeConflict:
+                return String(localized: "error.timeConflict")
+            case .invalidTimeSlot:
+                return String(localized: "error.invalidTimeSlot")
+            case .saveFailed(let error):
+                return String(localized: "error.saveFailed \(error.localizedDescription)")
+            case .fetchFailed(let error):
+                return String(localized: "error.fetchFailed \(error.localizedDescription)")
+            }
+        }
+    }
+}

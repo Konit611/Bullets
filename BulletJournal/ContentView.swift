@@ -21,15 +21,17 @@ struct ContentView: View {
 
     var body: some View {
         TabView(selection: $selectedTab) {
-            HomeView(modelContext: modelContext)
-                .tabItem {
-                    Label {
-                        Text("tab.home")
-                    } icon: {
-                        Image(systemName: "house.fill")
-                    }
+            NavigationStack {
+                HomeView(modelContext: modelContext)
+            }
+            .tabItem {
+                Label {
+                    Text("tab.home")
+                } icon: {
+                    Image(systemName: "house.fill")
                 }
-                .tag(Tab.home)
+            }
+            .tag(Tab.home)
 
             DashboardView(modelContext: modelContext)
                 .tabItem {
@@ -58,6 +60,6 @@ struct ContentView: View {
 
 #Preview {
     ContentView()
-        .modelContainer(for: [Item.self, FocusTask.self, FocusSession.self], inMemory: true)
+        .modelContainer(for: [Item.self, FocusTask.self, FocusSession.self, DailyRecord.self], inMemory: true)
         .environmentObject(LocalizationManager.shared)
 }

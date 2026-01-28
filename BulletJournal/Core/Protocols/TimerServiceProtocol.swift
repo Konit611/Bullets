@@ -19,7 +19,7 @@ protocol TimerServiceProtocol: AnyObject {
     var statePublisher: AnyPublisher<TimerState, Never> { get }
     var tickPublisher: AnyPublisher<Int, Never> { get }
 
-    func start()
+    func start(from initialSeconds: Int)
     func pause()
     func resume()
     func stop() -> Int

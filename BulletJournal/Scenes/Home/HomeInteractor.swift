@@ -8,13 +8,32 @@ import Combine
 import SwiftData
 
 @MainActor
-final class HomeInteractor {
+protocol HomeInteractorProtocol: AnyObject {
+    var currentTask: FocusTask? { get }
+    var currentSession: FocusSession? { get }
+    var taskLoadedPublisher: AnyPublisher<Home.LoadCurrentTask.Response, Never> { get }
+    var errorPublisher: AnyPublisher<AppError, Never> { get }
+    var timerTickPublisher: AnyPublisher<Int, Never> { get }
+    var timerStatePublisher: AnyPublisher<TimerState, Never> { get }
+    var soundPublisher: AnyPublisher<AmbientSound, Never> { get }
+    var sleepQualityPublisher: AnyPublisher<Home.SleepQuality.Response, Never> { get }
+    var currentElapsedSeconds: Int { get }
+
+    func loadCurrentTask()
+    func handleTimerAction(_ action: Home.TimerAction.ActionType)
+    func selectSound(_ sound: AmbientSound)
+    func switchTask(to newTask: FocusTask)
+    func checkNeedsSleepQualityPrompt()
+    func saveSleepQuality(_ emoji: String)
+}
+
+@MainActor
+final class HomeInteractor: HomeInteractorProtocol {
     // MARK: - Dependencies
 
     private let modelContext: ModelContext
     private let timerService: TimerServiceProtocol
     private let ambientSoundService: AmbientSoundServiceProtocol
-    private let screenTimeService: ScreenTimeService
 
     // MARK: - State
 
@@ -60,13 +79,11 @@ final class HomeInteractor {
     init(
         modelContext: ModelContext,
         timerService: TimerServiceProtocol,
-        ambientSoundService: AmbientSoundServiceProtocol,
-        screenTimeService: ScreenTimeService = .shared
+        ambientSoundService: AmbientSoundServiceProtocol
     ) {
         self.modelContext = modelContext
         self.timerService = timerService
         self.ambientSoundService = ambientSoundService
-        self.screenTimeService = screenTimeService
     }
 
     // MARK: - Use Cases
@@ -82,7 +99,17 @@ final class HomeInteractor {
 
         do {
             let tasks = try modelContext.fetch(descriptor)
-            currentTask = tasks.first
+            let newTask = tasks.first
+
+            // Task 전환 감지: 다른 Task로 바뀌면 타이머 리셋
+            if let newTask, let oldTask = currentTask, newTask.id != oldTask.id {
+                if timerService.state != .idle {
+                    _ = timerService.stop()
+                    currentSession = nil
+                }
+            }
+
+            currentTask = newTask
             let response = Home.LoadCurrentTask.Response(task: currentTask)
             taskLoadedSubject.send(response)
         } catch {
@@ -145,16 +172,6 @@ final class HomeInteractor {
         return try? modelContext.fetch(descriptor).first
     }
 
-    // MARK: - Screen Time Authorization
-
-    var screenTimeAuthorizationStatus: ScreenTimeService.AuthorizationStatus {
-        screenTimeService.authorizationStatus
-    }
-
-    func requestScreenTimeAuthorization() async -> Bool {
-        await screenTimeService.requestAuthorization()
-    }
-
     // MARK: - Private Timer Methods
 
     private func startTimer() {
@@ -163,8 +180,10 @@ final class HomeInteractor {
             return
         }
 
-        // Screen Time Shield 활성화
-        screenTimeService.enableFocusShield()
+        // 이전 세션들의 누적 시간 계산
+        let previousElapsed = task.focusSessions
+            .filter { $0.status == .completed }
+            .reduce(0) { $0 + $1.elapsedSeconds }
 
         let session = FocusSession(startedAt: Date())
         currentSession = session
@@ -172,20 +191,24 @@ final class HomeInteractor {
         modelContext.insert(session)
 
         saveContext()
-        timerService.start()
+
+        // 누적 시간부터 타이머 시작
+        timerService.start(from: previousElapsed)
     }
 
     private func pauseTimer() {
-        guard let session = currentSession else {
+        guard let task = currentTask, let session = currentSession else {
             errorSubject.send(.timerNotRunning)
             return
         }
 
         timerService.pause()
-        session.elapsedSeconds = timerService.elapsedSeconds
+
+        // 이 세션의 시간만 저장 (총 시간 - 이전 세션들 누적)
+        let previousElapsed = calculatePreviousElapsed(for: task, excluding: session)
+        session.elapsedSeconds = timerService.elapsedSeconds - previousElapsed
         session.pause()
 
-        // Shield는 유지 (pause 상태에서도 다른 앱 차단)
         saveContext()
     }
 
@@ -201,20 +224,26 @@ final class HomeInteractor {
     }
 
     private func stopTimer() {
-        guard let session = currentSession else {
+        guard let task = currentTask, let session = currentSession else {
             errorSubject.send(.timerNotRunning)
             return
         }
 
         let totalSeconds = timerService.stop()
-        session.elapsedSeconds = totalSeconds
+
+        // 이 세션의 시간만 저장 (총 시간 - 이전 세션들 누적)
+        let previousElapsed = calculatePreviousElapsed(for: task, excluding: session)
+        session.elapsedSeconds = totalSeconds - previousElapsed
         session.complete()
         currentSession = nil
 
-        // Screen Time Shield 해제
-        screenTimeService.disableFocusShield()
-
         saveContext()
+    }
+
+    private func calculatePreviousElapsed(for task: FocusTask, excluding currentSession: FocusSession) -> Int {
+        task.focusSessions
+            .filter { $0.status == .completed && $0.id != currentSession.id }
+            .reduce(0) { $0 + $1.elapsedSeconds }
     }
 
     private func saveContext() {

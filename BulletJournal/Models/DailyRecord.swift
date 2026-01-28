@@ -13,6 +13,8 @@ final class DailyRecord {
     var sleepQualityEmoji: String?    // Set once on first focus, NOT editable
     var moodEmoji: String?            // Editable in DailyRecordDetail
     var reflectionText: String?       // Editable in DailyRecordDetail
+    var bedTime: Date?                // Bedtime (e.g., 22:00)
+    var wakeTime: Date?               // Wake time (e.g., 07:00) - Timeline starts from this time
     var createdAt: Date
     var updatedAt: Date
 
@@ -22,6 +24,8 @@ final class DailyRecord {
         sleepQualityEmoji: String? = nil,
         moodEmoji: String? = nil,
         reflectionText: String? = nil,
+        bedTime: Date? = nil,
+        wakeTime: Date? = nil,
         createdAt: Date = Date(),
         updatedAt: Date = Date()
     ) {
@@ -30,6 +34,8 @@ final class DailyRecord {
         self.sleepQualityEmoji = sleepQualityEmoji
         self.moodEmoji = moodEmoji
         self.reflectionText = reflectionText
+        self.bedTime = bedTime
+        self.wakeTime = wakeTime
         self.createdAt = createdAt
         self.updatedAt = updatedAt
     }
@@ -55,6 +61,18 @@ final class DailyRecord {
     func setSleepQuality(_ emoji: String) {
         guard sleepQualityEmoji == nil else { return }
         self.sleepQualityEmoji = emoji
+        self.updatedAt = Date()
+    }
+
+    /// Check if sleep times have been set
+    var hasSleepTimes: Bool {
+        bedTime != nil && wakeTime != nil
+    }
+
+    /// Update sleep times (bedTime and wakeTime)
+    func updateSleepTimes(bedTime: Date?, wakeTime: Date?) {
+        self.bedTime = bedTime
+        self.wakeTime = wakeTime
         self.updatedAt = Date()
     }
 }

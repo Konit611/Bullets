@@ -52,9 +52,9 @@ struct FocusView: View {
     // MARK: - Properties
 
     @ObservedObject var presenter: HomePresenter
+    @State private var showSoundPicker = false
 
     let onStop: () -> Void
-    let onSoundTapped: () -> Void
 
     // MARK: - Body
 
@@ -79,6 +79,16 @@ struct FocusView: View {
 
                 ambientSoundBar
             }
+        }
+        .sheet(isPresented: $showSoundPicker) {
+            SoundPickerView(
+                selectedSound: .init(
+                    get: { presenter.soundViewModel.selectedSound },
+                    set: { _ in }
+                ),
+                isPresented: $showSoundPicker,
+                onSoundSelected: presenter.selectSound
+            )
         }
     }
 
@@ -186,7 +196,7 @@ struct FocusView: View {
     private var ambientSoundBar: some View {
         HStack(spacing: Layout.SoundBar.spacing) {
             // Expand button
-            Button(action: onSoundTapped) {
+            Button(action: { showSoundPicker = true }) {
                 Image(systemName: "chevron.up")
                     .font(.system(size: Layout.SoundBar.chevronSize, weight: .semibold))
                     .foregroundStyle(AppColors.primaryText)
@@ -219,7 +229,7 @@ struct FocusView: View {
             // Play/Pause button
             Button(action: {
                 if presenter.soundViewModel.selectedSound == .none {
-                    onSoundTapped()
+                    showSoundPicker = true
                 }
             }) {
                 Image(systemName: "play.fill")
@@ -247,7 +257,6 @@ struct FocusView: View {
 
     return FocusView(
         presenter: presenter,
-        onStop: {},
-        onSoundTapped: {}
+        onStop: {}
     )
 }

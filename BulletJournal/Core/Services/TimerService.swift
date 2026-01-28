@@ -47,14 +47,17 @@ final class TimerService: TimerServiceProtocol {
 
     // MARK: - Public Methods
 
-    func start() {
+    func start(from initialSeconds: Int = 0) {
         guard state == .idle else { return }
 
         state = .running
         stateSubject.send(state)
         startedAt = Date()
-        accumulatedSeconds = 0
-        elapsedSeconds = 0
+        accumulatedSeconds = initialSeconds
+        elapsedSeconds = initialSeconds
+
+        // Send immediate tick so UI shows the initial time
+        tickSubject.send(elapsedSeconds)
 
         startTimer()
     }
@@ -119,7 +122,8 @@ final class TimerService: TimerServiceProtocol {
     private func startTimer() {
         timer?.invalidate()
         let newTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
-            Task { @MainActor in
+            guard let self else { return }
+            Task { @MainActor [weak self] in
                 self?.tick()
             }
         }

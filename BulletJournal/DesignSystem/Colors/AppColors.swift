@@ -50,4 +50,7 @@ enum AppColors {
 
     // MARK: - Current Time Indicator
     static let currentTimeIndicator = Color(hex: "#FF0B0B")
+
+    // MARK: - Onboarding
+    static let onboardingAccent = Color(hex: "#65C37C")
 }

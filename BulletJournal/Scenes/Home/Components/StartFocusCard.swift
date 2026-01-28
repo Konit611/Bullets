@@ -134,7 +134,7 @@ struct StartFocusCard: View {
         .disabled(!isEnabled)
         .opacity(isEnabled ? 1 : 0.5)
         .accessibilityLabel(Text("home.timer.start"))
-        .accessibilityHint(isEnabled ? Text("sleepQuality.accessibility.hint") : nil)
+        .accessibilityHint(Text(isEnabled ? String(localized: "sleepQuality.accessibility.hint") : ""))
     }
 
     private var resumeButton: some View {

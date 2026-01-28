@@ -185,7 +185,7 @@ final class DashboardInteractor: DashboardInteractorProtocol {
                     date: date,
                     totalFocusSeconds: values.focusSeconds,
                     totalPlannedSeconds: values.plannedSeconds,
-                    moodEmoji: moodEmojiLookup[date]
+                    moodEmoji: moodEmojiLookup[date] ?? nil
                 )
             }
             .sorted { $0.date > $1.date }

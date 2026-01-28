@@ -12,6 +12,7 @@ struct ContentView: View {
     @Environment(\.modelContext) private var modelContext
     @EnvironmentObject private var localizationManager: LocalizationManager
     @State private var selectedTab: Tab = .home
+    @State private var showOnboarding: Bool = true  // Always show for testing
 
     enum Tab: Hashable {
         case home
@@ -20,6 +21,23 @@ struct ContentView: View {
     }
 
     var body: some View {
+        ZStack {
+            mainContent
+
+            if showOnboarding {
+                OnboardingView(onComplete: {
+                    withAnimation(.easeInOut(duration: 0.3)) {
+                        showOnboarding = false
+                    }
+                })
+                .ignoresSafeArea(edges: .all)
+                .transition(.opacity)
+                .zIndex(1)
+            }
+        }
+    }
+
+    private var mainContent: some View {
         TabView(selection: $selectedTab) {
             NavigationStack {
                 HomeView(modelContext: modelContext)
@@ -56,7 +74,6 @@ struct ContentView: View {
         .tint(AppColors.primaryText)
     }
 }
-
 
 #Preview {
     ContentView()

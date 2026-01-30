@@ -342,8 +342,9 @@ final class DailyPlanPresenter: ObservableObject {
 
         // Update every 30 seconds
         currentTimeTimer = Timer.scheduledTimer(withTimeInterval: 30, repeats: true) { [weak self] _ in
-            Task { @MainActor [weak self] in
-                self?.updateCurrentTimePosition()
+            guard let self else { return }
+            Task { @MainActor in
+                self.updateCurrentTimePosition()
             }
         }
     }
@@ -355,17 +356,7 @@ final class DailyPlanPresenter: ObservableObject {
 
     private func updateCurrentTimePosition() {
         guard calendar.isDateInToday(currentDate) else {
-            viewModel = DailyPlan.ViewModel(
-                dateString: viewModel.dateString,
-                sleepRecord: viewModel.sleepRecord,
-                needsSleepRecord: viewModel.needsSleepRecord,
-                timelineRows: viewModel.timelineRows,
-                taskBlocks: viewModel.taskBlocks,
-                currentTimePosition: nil,
-                currentTimeString: nil,
-                wakeHour: viewModel.wakeHour,
-                bedHour: viewModel.bedHour
-            )
+            viewModel = viewModel.withUpdatedTime(position: nil, timeString: nil)
             return
         }
 
@@ -386,16 +377,6 @@ final class DailyPlanPresenter: ObservableObject {
             newTimeString = Self.timeFormatter.string(from: now)
         }
 
-        viewModel = DailyPlan.ViewModel(
-            dateString: viewModel.dateString,
-            sleepRecord: viewModel.sleepRecord,
-            needsSleepRecord: viewModel.needsSleepRecord,
-            timelineRows: viewModel.timelineRows,
-            taskBlocks: viewModel.taskBlocks,
-            currentTimePosition: newPosition,
-            currentTimeString: newTimeString,
-            wakeHour: viewModel.wakeHour,
-            bedHour: viewModel.bedHour
-        )
+        viewModel = viewModel.withUpdatedTime(position: newPosition, timeString: newTimeString)
     }
 }

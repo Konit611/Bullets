@@ -123,8 +123,8 @@ final class TimerService: TimerServiceProtocol {
         timer?.invalidate()
         let newTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
             guard let self else { return }
-            Task { @MainActor [weak self] in
-                self?.tick()
+            Task { @MainActor in
+                self.tick()
             }
         }
         RunLoop.current.add(newTimer, forMode: .common)

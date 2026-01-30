@@ -205,7 +205,12 @@ final class DailyPlanInteractor: DailyPlanInteractorProtocol {
                 record.date == normalizedDate
             }
         )
-        return try? modelContext.fetch(descriptor).first
+        do {
+            return try modelContext.fetch(descriptor).first
+        } catch {
+            errorSubject.send(.fetchFailed(error))
+            return nil
+        }
     }
 
     private func fetchOrCreateDailyRecord(for date: Date) -> DailyRecord {
@@ -231,7 +236,12 @@ final class DailyPlanInteractor: DailyPlanInteractorProtocol {
             sortBy: [SortDescriptor(\.startTime)]
         )
 
-        return (try? modelContext.fetch(descriptor)) ?? []
+        do {
+            return try modelContext.fetch(descriptor)
+        } catch {
+            errorSubject.send(.fetchFailed(error))
+            return []
+        }
     }
 
     private func fetchTask(by id: UUID) -> FocusTask? {
@@ -240,7 +250,12 @@ final class DailyPlanInteractor: DailyPlanInteractorProtocol {
                 task.id == id
             }
         )
-        return try? modelContext.fetch(descriptor).first
+        do {
+            return try modelContext.fetch(descriptor).first
+        } catch {
+            errorSubject.send(.fetchFailed(error))
+            return nil
+        }
     }
 
     private func copyTasks(from sourceTasks: [FocusTask], to targetDate: Date) {
@@ -273,6 +288,10 @@ final class DailyPlanInteractor: DailyPlanInteractorProtocol {
             modelContext.insert(newTask)
         }
 
-        try? modelContext.save()
+        do {
+            try modelContext.save()
+        } catch {
+            errorSubject.send(.saveFailed(error))
+        }
     }
 }

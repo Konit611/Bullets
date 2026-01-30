@@ -13,6 +13,7 @@ final class DashboardPresenter: ObservableObject {
     @Published private(set) var totalFocusTimeViewModel: Dashboard.TotalFocusTimeViewModel = .empty
     @Published private(set) var weeklyChartViewModel: Dashboard.WeeklyChartViewModel = .empty
     @Published private(set) var dailyRecordViewModels: [Dashboard.DailyRecordViewModel] = []
+    @Published var error: AppError?
 
     // MARK: - Dependencies
 
@@ -34,10 +35,20 @@ final class DashboardPresenter: ObservableObject {
 
     // MARK: - Private Methods
 
+    func clearError() {
+        error = nil
+    }
+
     private func bindInteractor() {
         interactor.statisticsLoadedPublisher
             .sink { [weak self] response in
                 self?.presentStatistics(response)
+            }
+            .store(in: &cancellables)
+
+        interactor.errorPublisher
+            .sink { [weak self] appError in
+                self?.error = appError
             }
             .store(in: &cancellables)
     }

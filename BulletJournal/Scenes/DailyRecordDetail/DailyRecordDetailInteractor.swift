@@ -95,6 +95,7 @@ final class DailyRecordDetailInteractor: DailyRecordDetailInteractorProtocol {
             let records = try modelContext.fetch(descriptor)
             return records.first
         } catch {
+            errorSubject.send(.fetchFailed(error.localizedDescription))
             return nil
         }
     }
@@ -121,6 +122,7 @@ final class DailyRecordDetailInteractor: DailyRecordDetailInteractorProtocol {
             let descriptor = FetchDescriptor<FocusSession>()
             allSessions = try modelContext.fetch(descriptor)
         } catch {
+            errorSubject.send(.fetchFailed(error.localizedDescription))
             return .empty
         }
 
@@ -138,6 +140,7 @@ final class DailyRecordDetailInteractor: DailyRecordDetailInteractorProtocol {
             let descriptor = FetchDescriptor<FocusTask>()
             allTasks = try modelContext.fetch(descriptor)
         } catch {
+            errorSubject.send(.fetchFailed(error.localizedDescription))
             return DailyRecordDetail.GoalAchievementData(
                 totalFocusSeconds: totalFocusSeconds,
                 totalPlannedSeconds: 0

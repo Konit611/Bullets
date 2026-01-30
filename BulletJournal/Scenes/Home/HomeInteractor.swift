@@ -203,7 +203,12 @@ final class HomeInteractor: HomeInteractorProtocol {
                 record.date == today
             }
         )
-        return try? modelContext.fetch(descriptor).first
+        do {
+            return try modelContext.fetch(descriptor).first
+        } catch {
+            errorSubject.send(.fetchFailed(error.localizedDescription))
+            return nil
+        }
     }
 
     // MARK: - Private Timer Methods

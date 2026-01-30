@@ -10,6 +10,7 @@ import SwiftData
 @MainActor
 protocol DashboardInteractorProtocol: AnyObject {
     var statisticsLoadedPublisher: AnyPublisher<Dashboard.LoadStatistics.Response, Never> { get }
+    var errorPublisher: AnyPublisher<AppError, Never> { get }
     func loadStatistics()
 }
 
@@ -22,9 +23,14 @@ final class DashboardInteractor: DashboardInteractorProtocol {
     // MARK: - Publishers
 
     private let statisticsLoadedSubject = PassthroughSubject<Dashboard.LoadStatistics.Response, Never>()
+    private let errorSubject = PassthroughSubject<AppError, Never>()
 
     var statisticsLoadedPublisher: AnyPublisher<Dashboard.LoadStatistics.Response, Never> {
         statisticsLoadedSubject.eraseToAnyPublisher()
+    }
+
+    var errorPublisher: AnyPublisher<AppError, Never> {
+        errorSubject.eraseToAnyPublisher()
     }
 
     // MARK: - Initialization
@@ -45,6 +51,7 @@ final class DashboardInteractor: DashboardInteractorProtocol {
             let descriptor = FetchDescriptor<FocusSession>()
             allSessions = try modelContext.fetch(descriptor)
         } catch {
+            errorSubject.send(.fetchFailed(error.localizedDescription))
             allSessions = []
         }
 
@@ -135,6 +142,7 @@ final class DashboardInteractor: DashboardInteractorProtocol {
             )
             tasks = try modelContext.fetch(taskDescriptor)
         } catch {
+            errorSubject.send(.fetchFailed(error.localizedDescription))
             tasks = []
         }
 
@@ -148,6 +156,7 @@ final class DashboardInteractor: DashboardInteractorProtocol {
             )
             dailyRecords = try modelContext.fetch(recordDescriptor)
         } catch {
+            errorSubject.send(.fetchFailed(error.localizedDescription))
             dailyRecords = []
         }
 

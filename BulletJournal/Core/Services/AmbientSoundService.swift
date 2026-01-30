@@ -6,6 +6,7 @@
 import Foundation
 import AVFoundation
 import Combine
+import os.log
 
 final class AmbientSoundService: AmbientSoundServiceProtocol {
     private(set) var currentSound: AmbientSound = .none
@@ -15,6 +16,7 @@ final class AmbientSoundService: AmbientSoundServiceProtocol {
     private var fadingOutPlayer: AVAudioPlayer?
     private var fadeTimer: Timer?
     private var targetVolume: Float = 1.0
+    private let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "BulletJournal", category: "AmbientSound")
 
     private let currentSoundSubject = CurrentValueSubject<AmbientSound, Never>(.none)
     private let isPlayingSubject = CurrentValueSubject<Bool, Never>(false)
@@ -186,7 +188,7 @@ final class AmbientSoundService: AmbientSoundServiceProtocol {
             )
             try AVAudioSession.sharedInstance().setActive(true)
         } catch {
-            // Audio session setup failed
+            logger.error("Audio session setup failed: \(error.localizedDescription)")
         }
     }
 }

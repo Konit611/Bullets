@@ -76,6 +76,20 @@ enum DailyPlan {
         let wakeHour: Int
         let bedHour: Int
 
+        func withUpdatedTime(position: CGFloat?, timeString: String?) -> ViewModel {
+            ViewModel(
+                dateString: dateString,
+                sleepRecord: sleepRecord,
+                needsSleepRecord: needsSleepRecord,
+                timelineRows: timelineRows,
+                taskBlocks: taskBlocks,
+                currentTimePosition: position,
+                currentTimeString: timeString,
+                wakeHour: wakeHour,
+                bedHour: bedHour
+            )
+        }
+
         static let empty = ViewModel(
             dateString: "",
             sleepRecord: nil,

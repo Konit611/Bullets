@@ -12,7 +12,7 @@ struct ContentView: View {
     @Environment(\.modelContext) private var modelContext
     @EnvironmentObject private var localizationManager: LocalizationManager
     @State private var selectedTab: Tab = .home
-    @State private var showOnboarding: Bool = true  // Always show for testing
+    @State private var showOnboarding: Bool = !UserDefaults.standard.bool(forKey: "hasCompletedOnboarding")
 
     enum Tab: Hashable {
         case home
@@ -26,6 +26,7 @@ struct ContentView: View {
 
             if showOnboarding {
                 OnboardingView(onComplete: {
+                    UserDefaults.standard.set(true, forKey: "hasCompletedOnboarding")
                     withAnimation(.easeInOut(duration: 0.3)) {
                         showOnboarding = false
                     }

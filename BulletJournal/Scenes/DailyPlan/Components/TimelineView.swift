@@ -65,7 +65,7 @@ struct TimelineView: View {
         // Check if tap is on an existing task block
         for block in taskBlocks {
             if location.y >= block.yPosition && location.y < block.yPosition + block.height {
-                // Tap is on a task block, let the task block handle it
+                onTaskTapped(block.id)
                 return
             }
         }
@@ -80,43 +80,25 @@ struct TimelineView: View {
     }
 
     private func findEmptySlot(containingMinutesFromWake: CGFloat) -> (startHour: Int, startMinute: Int, endHour: Int, endMinute: Int) {
-        // Sort task blocks by yPosition
-        let sortedBlocks = taskBlocks.sorted { $0.yPosition < $1.yPosition }
-
-        // Convert yPosition to minutes from wake time
-        func yPositionToMinutes(_ y: CGFloat) -> Int {
-            return Int((y / Layout.hourHeight) * 60)
-        }
-
-        // Timeline boundaries in minutes from wake
-        let timelineStartMinutes = 0
-        let timelineEndMinutes = (bedHour - wakeHour) * 60
-
         let tappedMinutes = Int(containingMinutesFromWake)
 
-        // Find the slot boundaries
-        var slotStartMinutes = timelineStartMinutes
-        var slotEndMinutes = timelineEndMinutes
+        // Snap to the hour boundary that contains the tap
+        let tappedHourMinutes = (tappedMinutes / 60) * 60
+        let proposedStartMinutes = tappedHourMinutes
+        let proposedEndMinutes = tappedHourMinutes + 60
 
-        for block in sortedBlocks {
-            let blockStartMinutes = yPositionToMinutes(block.yPosition)
-            let blockEndMinutes = yPositionToMinutes(block.yPosition + block.height)
+        // Timeline boundaries in minutes from wake
+        let timelineEndMinutes = (bedHour - wakeHour) * 60
 
-            if blockEndMinutes <= tappedMinutes {
-                // This block ends before our tap, so slot starts after this block
-                slotStartMinutes = max(slotStartMinutes, blockEndMinutes)
-            } else if blockStartMinutes > tappedMinutes {
-                // This block starts after our tap, so slot ends at this block's start
-                slotEndMinutes = min(slotEndMinutes, blockStartMinutes)
-                break
-            }
-        }
+        // Clamp to timeline range
+        let clampedStart = max(0, min(proposedStartMinutes, timelineEndMinutes))
+        let clampedEnd = max(clampedStart, min(proposedEndMinutes, timelineEndMinutes))
 
         // Convert back to hours and minutes
-        let startHour = wakeHour + slotStartMinutes / 60
-        let startMinute = slotStartMinutes % 60
-        let endHour = wakeHour + slotEndMinutes / 60
-        let endMinute = slotEndMinutes % 60
+        let startHour = wakeHour + clampedStart / 60
+        let startMinute = clampedStart % 60
+        let endHour = wakeHour + clampedEnd / 60
+        let endMinute = clampedEnd % 60
 
         return (startHour, startMinute, endHour, endMinute)
     }
@@ -152,13 +134,7 @@ struct TimelineView: View {
         ForEach(taskBlocks) { block in
             TaskBlockView(viewModel: block)
                 .offset(x: Layout.taskLeadingOffset, y: block.yPosition)
-                .contentShape(Rectangle())
-                .highPriorityGesture(
-                    TapGesture()
-                        .onEnded {
-                            onTaskTapped(block.id)
-                        }
-                )
+                .allowsHitTesting(false)
         }
     }
 

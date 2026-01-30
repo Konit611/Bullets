@@ -230,9 +230,11 @@ struct FocusView: View {
             Button(action: {
                 if presenter.soundViewModel.selectedSound == .none {
                     showSoundPicker = true
+                } else {
+                    presenter.toggleSound()
                 }
             }) {
-                Image(systemName: "play.fill")
+                Image(systemName: presenter.soundViewModel.isPlaying ? "pause.fill" : "play.fill")
                     .font(.system(size: Layout.SoundBar.playIconSize))
                     .foregroundStyle(AppColors.primaryText)
             }

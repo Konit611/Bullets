@@ -74,6 +74,8 @@ struct SettingsView: View {
             settingsDivider
             privacyPolicyRow
             settingsDivider
+            soundLicenseRow
+            settingsDivider
             emailRow
         }
         .background(AppColors.cardBackground)
@@ -96,6 +98,18 @@ struct SettingsView: View {
             showChevron: presenter.viewModel.isPrivacyPolicyAvailable,
             action: presenter.viewModel.isPrivacyPolicyAvailable ? { openPrivacyPolicy() } : nil
         )
+    }
+
+    private var soundLicenseRow: some View {
+        NavigationLink(destination: SoundLicenseView()) {
+            SettingsRowView(
+                icon: "music.note",
+                title: "settings.soundLicense",
+                showChevron: true,
+                asLabel: true
+            )
+        }
+        .buttonStyle(.plain)
     }
 
     private var emailRow: some View {

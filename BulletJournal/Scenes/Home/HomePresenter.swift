@@ -15,6 +15,8 @@ final class HomePresenter: ObservableObject {
     @Published private(set) var timerViewModel: Home.TimerViewModel = .initial
     @Published private(set) var soundViewModel: Home.SoundViewModel = .initial
     @Published private(set) var hasCurrentTask: Bool = false
+    @Published private(set) var hasAnyTasks: Bool = true
+    @Published private(set) var isTaskLoaded: Bool = false
     @Published private(set) var error: AppError?
     @Published var showSleepQualityPrompt: Bool = false
     @Published var showFocusView: Bool = false
@@ -73,6 +75,10 @@ final class HomePresenter: ObservableObject {
         interactor.selectSound(sound)
     }
 
+    func toggleSound() {
+        interactor.toggleSound()
+    }
+
     func clearError() {
         error = nil
     }
@@ -128,10 +134,32 @@ final class HomePresenter: ObservableObject {
         // Bind sound changes
         interactor.soundPublisher
             .sink { [weak self] sound in
-                self?.soundViewModel = Home.SoundViewModel(
+                guard let self else { return }
+                self.soundViewModel = Home.SoundViewModel(
                     selectedSound: sound,
-                    displayName: sound.localizedName
+                    displayName: sound.localizedName,
+                    isPlaying: self.soundViewModel.isPlaying
                 )
+            }
+            .store(in: &cancellables)
+
+        // Bind sound isPlaying
+        interactor.soundIsPlayingPublisher
+            .sink { [weak self] isPlaying in
+                guard let self else { return }
+                self.soundViewModel = Home.SoundViewModel(
+                    selectedSound: self.soundViewModel.selectedSound,
+                    displayName: self.soundViewModel.displayName,
+                    isPlaying: isPlaying
+                )
+            }
+            .store(in: &cancellables)
+
+        // Bind hasAnyTasks
+        interactor.hasAnyTasksPublisher
+            .sink { [weak self] hasAny in
+                self?.hasAnyTasks = hasAny
+                self?.isTaskLoaded = true
             }
             .store(in: &cancellables)
 

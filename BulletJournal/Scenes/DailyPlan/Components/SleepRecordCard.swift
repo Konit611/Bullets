@@ -70,17 +70,18 @@ struct SleepRecordCard: View {
                     .foregroundStyle(AppColors.primaryText)
             }
 
-            // Title
-            Text("dailyPlan.sleepRecord")
-                .font(.system(size: 14, weight: .semibold))
-                .foregroundStyle(AppColors.primaryText)
+            // Title + Sleep summary (vertical)
+            VStack(alignment: .leading, spacing: 4) {
+                Text("dailyPlan.sleepRecord")
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundStyle(AppColors.primaryText)
+
+                if !isExpanded {
+                    sleepSummary
+                }
+            }
 
             Spacer()
-
-            // Sleep info summary (when collapsed)
-            if !isExpanded {
-                sleepSummary
-            }
 
             // Chevron
             if isEditable {

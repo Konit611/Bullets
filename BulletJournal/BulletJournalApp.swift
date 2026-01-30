@@ -33,9 +33,6 @@ struct BulletJournalApp: App {
             ContentView()
                 .environment(\.locale, localizationManager.effectiveLocale)
                 .environmentObject(localizationManager)
-                .onAppear {
-                    SampleDataSeeder.seedIfNeeded(modelContext: sharedModelContainer.mainContext)
-                }
         }
         .modelContainer(sharedModelContainer)
     }

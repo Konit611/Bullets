@@ -97,10 +97,12 @@ enum Home {
     struct SoundViewModel: Equatable {
         let selectedSound: AmbientSound
         let displayName: String
+        let isPlaying: Bool
 
         static let initial = SoundViewModel(
             selectedSound: .none,
-            displayName: AmbientSound.none.localizedName
+            displayName: AmbientSound.none.localizedName,
+            isPlaying: false
         )
     }
 }

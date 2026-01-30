@@ -61,7 +61,9 @@ struct ContentView: View {
                 }
                 .tag(Tab.dashboard)
 
-            SettingsView(localizationManager: localizationManager)
+            NavigationStack {
+                SettingsView(localizationManager: localizationManager)
+            }
                 .tabItem {
                     Label {
                         Text("tab.settings")

@@ -16,12 +16,15 @@ protocol HomeInteractorProtocol: AnyObject {
     var timerTickPublisher: AnyPublisher<Int, Never> { get }
     var timerStatePublisher: AnyPublisher<TimerState, Never> { get }
     var soundPublisher: AnyPublisher<AmbientSound, Never> { get }
+    var soundIsPlayingPublisher: AnyPublisher<Bool, Never> { get }
     var sleepQualityPublisher: AnyPublisher<Home.SleepQuality.Response, Never> { get }
+    var hasAnyTasksPublisher: AnyPublisher<Bool, Never> { get }
     var currentElapsedSeconds: Int { get }
 
     func loadCurrentTask()
     func handleTimerAction(_ action: Home.TimerAction.ActionType)
     func selectSound(_ sound: AmbientSound)
+    func toggleSound()
     func switchTask(to newTask: FocusTask)
     func checkNeedsSleepQualityPrompt()
     func saveSleepQuality(_ emoji: String)
@@ -39,12 +42,15 @@ final class HomeInteractor: HomeInteractorProtocol {
 
     private(set) var currentTask: FocusTask?
     private(set) var currentSession: FocusSession?
+    private var selectedSound: AmbientSound = .none
 
     // MARK: - Publishers
 
     private let taskLoadedSubject = PassthroughSubject<Home.LoadCurrentTask.Response, Never>()
     private let errorSubject = PassthroughSubject<AppError, Never>()
     private let sleepQualitySubject = PassthroughSubject<Home.SleepQuality.Response, Never>()
+    private let hasAnyTasksSubject = PassthroughSubject<Bool, Never>()
+    private let selectedSoundSubject = CurrentValueSubject<AmbientSound, Never>(.none)
 
     var taskLoadedPublisher: AnyPublisher<Home.LoadCurrentTask.Response, Never> {
         taskLoadedSubject.eraseToAnyPublisher()
@@ -63,11 +69,19 @@ final class HomeInteractor: HomeInteractorProtocol {
     }
 
     var soundPublisher: AnyPublisher<AmbientSound, Never> {
-        ambientSoundService.currentSoundPublisher
+        selectedSoundSubject.eraseToAnyPublisher()
+    }
+
+    var soundIsPlayingPublisher: AnyPublisher<Bool, Never> {
+        ambientSoundService.isPlayingPublisher
     }
 
     var sleepQualityPublisher: AnyPublisher<Home.SleepQuality.Response, Never> {
         sleepQualitySubject.eraseToAnyPublisher()
+    }
+
+    var hasAnyTasksPublisher: AnyPublisher<Bool, Never> {
+        hasAnyTasksSubject.eraseToAnyPublisher()
     }
 
     var currentElapsedSeconds: Int {
@@ -112,8 +126,14 @@ final class HomeInteractor: HomeInteractorProtocol {
             currentTask = newTask
             let response = Home.LoadCurrentTask.Response(task: currentTask)
             taskLoadedSubject.send(response)
+
+            var allDescriptor = FetchDescriptor<FocusTask>()
+            allDescriptor.fetchLimit = 1
+            let hasAnyTasks = try modelContext.fetch(allDescriptor).isEmpty == false
+            hasAnyTasksSubject.send(hasAnyTasks)
         } catch {
             currentTask = nil
+            hasAnyTasksSubject.send(false)
             errorSubject.send(.fetchFailed(error.localizedDescription))
         }
     }
@@ -132,7 +152,20 @@ final class HomeInteractor: HomeInteractorProtocol {
     }
 
     func selectSound(_ sound: AmbientSound) {
-        ambientSoundService.play(sound)
+        selectedSound = sound
+        selectedSoundSubject.send(sound)
+        // 타이머 실행 중이면 즉시 전환, 아니면 선택만 저장
+        if timerService.state != .idle {
+            ambientSoundService.play(sound)
+        }
+    }
+
+    func toggleSound() {
+        if ambientSoundService.isPlaying {
+            ambientSoundService.pause()
+        } else {
+            ambientSoundService.resume()
+        }
     }
 
     func switchTask(to newTask: FocusTask) {
@@ -142,6 +175,7 @@ final class HomeInteractor: HomeInteractorProtocol {
         currentTask = newTask
         let response = Home.LoadCurrentTask.Response(task: newTask)
         taskLoadedSubject.send(response)
+        hasAnyTasksSubject.send(true)
     }
 
     func checkNeedsSleepQualityPrompt() {
@@ -194,6 +228,11 @@ final class HomeInteractor: HomeInteractorProtocol {
 
         // 누적 시간부터 타이머 시작
         timerService.start(from: previousElapsed)
+
+        // 선택된 사운드 재생
+        if selectedSound != .none {
+            ambientSoundService.play(selectedSound)
+        }
     }
 
     private func pauseTimer() {
@@ -236,6 +275,9 @@ final class HomeInteractor: HomeInteractorProtocol {
         session.elapsedSeconds = totalSeconds - previousElapsed
         session.complete()
         currentSession = nil
+
+        // 세션 종료 시 사운드도 정지
+        ambientSoundService.stop()
 
         saveContext()
     }

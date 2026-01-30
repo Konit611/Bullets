@@ -355,11 +355,11 @@ final class HomePresenterTests: XCTestCase {
 
     func testSelectSound_callsInteractorSelectSound() {
         // Act
-        sut.selectSound(.forest)
+        sut.selectSound(.birds)
 
         // Assert
         XCTAssertEqual(mockAmbientSoundService.playCallCount, 1)
-        XCTAssertEqual(mockAmbientSoundService.lastPlayedSound, .forest)
+        XCTAssertEqual(mockAmbientSoundService.lastPlayedSound, .birds)
     }
 
     // MARK: - Helper Methods

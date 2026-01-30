@@ -34,20 +34,24 @@ struct HomeView: View {
                 TaskCardView(
                     viewModel: presenter.taskViewModel,
                     hasTask: presenter.hasCurrentTask,
+                    hasAnyTasks: presenter.hasAnyTasks,
+                    isTaskLoaded: presenter.isTaskLoaded,
                     onChevronTapped: {
                         navigateToDailyPlan = true
                     }
                 )
 
-                StartFocusCard(
-                    timerState: presenter.timerViewModel.state,
-                    focusedTimeDisplay: presenter.taskViewModel.focusedTimeDisplay,
-                    soundName: presenter.soundViewModel.displayName,
-                    isEnabled: presenter.hasCurrentTask,
-                    onStart: presenter.requestStartTimer,
-                    onResume: presenter.resumeTimer,
-                    onSoundTapped: { showSoundPicker = true }
-                )
+                if presenter.hasAnyTasks {
+                    StartFocusCard(
+                        timerState: presenter.timerViewModel.state,
+                        focusedTimeDisplay: presenter.taskViewModel.focusedTimeDisplay,
+                        soundName: presenter.soundViewModel.displayName,
+                        isEnabled: presenter.hasCurrentTask,
+                        onStart: presenter.requestStartTimer,
+                        onResume: presenter.resumeTimer,
+                        onSoundTapped: { showSoundPicker = true }
+                    )
+                }
             }
             .padding(.horizontal, 15)
             .padding(.top, 10)

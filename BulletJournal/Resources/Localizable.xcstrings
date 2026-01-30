@@ -139,7 +139,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Bedtime"
+            "value" : "Bed"
           }
         },
         "ja" : {
@@ -507,7 +507,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Wake Time"
+            "value" : "Wake"
           }
         },
         "ja" : {
@@ -1398,25 +1398,163 @@
         }
       }
     },
-    "home.sound.forest" : {
+    "home.noPlan.button" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Forest"
+            "value" : "Plan your day"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "森林"
+            "value" : "一日の計画を立てる"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "숲속"
+            "value" : "하루 계획 세우기"
+          }
+        }
+      }
+    },
+    "home.noPlan.description.line1" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Create your first day."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "最初の一日を作ってみましょう。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "첫 번째 하루를 만들어 보세요."
+          }
+        }
+      }
+    },
+    "home.noPlan.description.line2" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Set your focus time,"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "集中する時間を決めたら"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "집중할 시간을 정하면"
+          }
+        }
+      }
+    },
+    "home.noPlan.description.line3" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "and we'll help with the rest."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "あとは私たちがお手伝いします。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "나머지는 저희가 도와드릴게요."
+          }
+        }
+      }
+    },
+    "home.noPlan.title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ready to plan your day?"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "今日の一日を計画しませんか？"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "오늘 하루를 계획해 볼까요?"
+          }
+        }
+      }
+    },
+    "home.sound.birds" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Birds"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "鳥のさえずり"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "새소리"
+          }
+        }
+      }
+    },
+    "home.sound.nightForest" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Night Forest"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "夜の森"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "밤숲"
           }
         }
       }
@@ -1877,6 +2015,121 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "개인 정보 처리 방침"
+          }
+        }
+      }
+    },
+    "settings.soundLicense" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sound License"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "サウンドライセンス"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "사운드 라이선스"
+          }
+        }
+      }
+    },
+    "soundLicense.artist" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Artist"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アーティスト"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "아티스트"
+          }
+        }
+      }
+    },
+    "soundLicense.license" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "License"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ライセンス"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "라이선스"
+          }
+        }
+      }
+    },
+    "soundLicense.source" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Source"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "出典"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "출처"
+          }
+        }
+      }
+    },
+    "soundLicense.title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sound License"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "サウンドライセンス"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "사운드 라이선스"
           }
         }
       }

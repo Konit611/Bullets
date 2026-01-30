@@ -10,8 +10,8 @@ struct StartFocusCard: View {
 
     private enum Layout {
         static let circleSize: CGFloat = 272
-        static let innerShadowRadius: CGFloat = 10
-        static let innerShadowOffset: CGFloat = 5
+        static let innerShadowRadius: CGFloat = 5
+        static let innerShadowOffset: CGFloat = 0.2
         static let timerFontSize: CGFloat = 52
     }
 

@@ -29,6 +29,7 @@ struct SettingsRowView: View {
     let value: String?
     let showChevron: Bool
     let action: (() -> Void)?
+    let isLabelOnly: Bool
 
     // MARK: - Initialization
 
@@ -44,23 +45,47 @@ struct SettingsRowView: View {
         self.value = value
         self.showChevron = showChevron
         self.action = action
+        self.isLabelOnly = false
+    }
+
+    /// NavigationLink 등 외부 컨테이너의 label로 사용할 때 Button 래핑 없이 content만 노출
+    init(
+        icon: String,
+        title: LocalizedStringKey,
+        value: String? = nil,
+        showChevron: Bool = false,
+        asLabel: Bool
+    ) {
+        self.icon = icon
+        self.title = title
+        self.value = value
+        self.showChevron = showChevron
+        self.action = nil
+        self.isLabelOnly = asLabel
     }
 
     // MARK: - Body
 
     var body: some View {
-        Button {
-            action?()
-        } label: {
+        if isLabelOnly {
             content
+                .accessibilityElement(children: .combine)
+                .accessibilityLabel(title)
+                .accessibilityValue(value ?? "")
+        } else {
+            Button {
+                action?()
+            } label: {
+                content
+            }
+            .buttonStyle(.plain)
+            .disabled(action == nil)
+            .accessibilityElement(children: .combine)
+            .accessibilityLabel(title)
+            .accessibilityValue(value ?? "")
+            .accessibilityAddTraits(action != nil ? .isButton : [])
+            .accessibilityHint(accessibilityHintText)
         }
-        .buttonStyle(.plain)
-        .disabled(action == nil)
-        .accessibilityElement(children: .combine)
-        .accessibilityLabel(title)
-        .accessibilityValue(value ?? "")
-        .accessibilityAddTraits(action != nil ? .isButton : [])
-        .accessibilityHint(accessibilityHintText)
     }
 
     // MARK: - Private Views

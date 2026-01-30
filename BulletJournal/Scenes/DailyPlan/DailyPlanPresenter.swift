@@ -137,6 +137,10 @@ final class DailyPlanPresenter: ObservableObject {
         interactor.deleteTask(id: id)
     }
 
+    func toggleHoliday() {
+        interactor.toggleHoliday(for: currentDate)
+    }
+
     func clearError() {
         error = nil
     }
@@ -193,20 +197,42 @@ final class DailyPlanPresenter: ObservableObject {
             sleepRecordViewModel = nil
         }
 
-        // Calculate wake/bed hour for timeline
+        // Calculate wake/bed hour for timeline (holiday-aware defaults)
+        let defaultWakeHour = response.isHoliday
+            ? DailyPlan.Configuration.holidayDefaultWakeHour
+            : DailyPlan.Configuration.defaultWakeHour
+        let defaultBedHour = response.isHoliday
+            ? DailyPlan.Configuration.holidayDefaultTimelineEndHour
+            : DailyPlan.Configuration.defaultTimelineEndHour
+
         let wakeHour: Int
         let bedHour: Int
 
         if let wakeTime = response.sleepRecord?.wakeTime {
             wakeHour = calendar.component(.hour, from: wakeTime)
         } else {
-            wakeHour = DailyPlan.Configuration.defaultWakeHour
+            wakeHour = defaultWakeHour
         }
 
         if let bedTime = response.sleepRecord?.bedTime {
             bedHour = calendar.component(.hour, from: bedTime)
         } else {
-            bedHour = DailyPlan.Configuration.defaultTimelineEndHour
+            bedHour = defaultBedHour
+        }
+
+        // Update picker defaults based on holiday mode when no existing values
+        if response.sleepRecord?.bedTime == nil {
+            let defaultBedPickerHour = response.isHoliday
+                ? DailyPlan.Configuration.holidayDefaultBedTimePickerHour
+                : DailyPlan.Configuration.defaultBedTimePickerHour
+            if let bedDate = calendar.date(bySettingHour: defaultBedPickerHour, minute: 0, second: 0, of: response.date) {
+                selectedBedTime = bedDate
+            }
+        }
+        if response.sleepRecord?.wakeTime == nil {
+            if let wakeDate = calendar.date(bySettingHour: defaultWakeHour, minute: 0, second: 0, of: response.date) {
+                selectedWakeTime = wakeDate
+            }
         }
 
         let timelineRows = buildTimelineRows(wakeHour: wakeHour, bedHour: bedHour)
@@ -243,7 +269,8 @@ final class DailyPlanPresenter: ObservableObject {
             currentTimePosition: currentTimePosition,
             currentTimeString: currentTimeString,
             wakeHour: wakeHour,
-            bedHour: bedHour
+            bedHour: bedHour,
+            isHoliday: response.isHoliday
         )
 
         // Store tasks for later access

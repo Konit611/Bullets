@@ -15,6 +15,7 @@ final class DailyRecord {
     var reflectionText: String?       // Editable in DailyRecordDetail
     var bedTime: Date?                // Bedtime (e.g., 22:00)
     var wakeTime: Date?               // Wake time (e.g., 07:00) - Timeline starts from this time
+    var isHoliday: Bool               // Holiday mode (weekend auto-detected, manually toggleable)
     var createdAt: Date
     var updatedAt: Date
 
@@ -26,6 +27,7 @@ final class DailyRecord {
         reflectionText: String? = nil,
         bedTime: Date? = nil,
         wakeTime: Date? = nil,
+        isHoliday: Bool = false,
         createdAt: Date = Date(),
         updatedAt: Date = Date()
     ) {
@@ -36,6 +38,7 @@ final class DailyRecord {
         self.reflectionText = reflectionText
         self.bedTime = bedTime
         self.wakeTime = wakeTime
+        self.isHoliday = isHoliday
         self.createdAt = createdAt
         self.updatedAt = updatedAt
     }

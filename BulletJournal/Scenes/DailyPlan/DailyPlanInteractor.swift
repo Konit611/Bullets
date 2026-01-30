@@ -19,6 +19,7 @@ protocol DailyPlanInteractorProtocol: AnyObject {
     func saveTask(_ form: DailyPlan.TaskFormData, for date: Date)
     func deleteTask(id: UUID)
     func hasTimeConflict(_ form: DailyPlan.TaskFormData, on date: Date) -> Bool
+    func toggleHoliday(for date: Date)
 }
 
 @MainActor
@@ -63,18 +64,26 @@ final class DailyPlanInteractor: DailyPlanInteractorProtocol {
     func loadDailyPlan(for date: Date) {
         let normalizedDate = calendar.startOfDay(for: date)
 
-        // Fetch daily record for sleep times
+        // Fetch or determine holiday status
         let dailyRecord = fetchDailyRecord(for: normalizedDate)
+
+        let isHoliday: Bool
+        if let record = dailyRecord {
+            isHoliday = record.isHoliday
+        } else {
+            // Auto-detect weekend for new records
+            let weekday = calendar.component(.weekday, from: normalizedDate)
+            let isWeekend = (weekday == 1 || weekday == 7) // Sun=1, Sat=7
+            isHoliday = isWeekend
+        }
 
         // Fetch tasks for the date
         var tasks = fetchTasks(for: normalizedDate)
 
-        // Auto-copy from yesterday if no tasks and yesterday has tasks
-        if tasks.isEmpty {
-            let yesterday = calendar.date(byAdding: .day, value: -1, to: normalizedDate) ?? normalizedDate
-            let yesterdayTasks = fetchTasks(for: yesterday)
-            if !yesterdayTasks.isEmpty && dailyRecord?.hasSleepTimes == true {
-                copyTasks(from: yesterdayTasks, to: normalizedDate)
+        // Auto-copy from most recent same-mode day if no tasks
+        if tasks.isEmpty && dailyRecord?.hasSleepTimes == true {
+            if let sourceTasks = findRecentSameModeTasks(before: normalizedDate, isHoliday: isHoliday) {
+                copyTasks(from: sourceTasks, to: normalizedDate)
                 tasks = fetchTasks(for: normalizedDate)
             }
         }
@@ -108,7 +117,8 @@ final class DailyPlanInteractor: DailyPlanInteractorProtocol {
             date: normalizedDate,
             sleepRecord: sleepRecordData,
             tasks: taskDataList,
-            needsSleepRecord: needsSleepRecord
+            needsSleepRecord: needsSleepRecord,
+            isHoliday: isHoliday
         )
 
         dailyPlanLoadedSubject.send(response)
@@ -184,6 +194,21 @@ final class DailyPlanInteractor: DailyPlanInteractorProtocol {
         }
     }
 
+    func toggleHoliday(for date: Date) {
+        let normalizedDate = calendar.startOfDay(for: date)
+        let record = fetchOrCreateDailyRecord(for: normalizedDate)
+
+        record.isHoliday.toggle()
+        record.updatedAt = Date()
+
+        do {
+            try modelContext.save()
+            loadDailyPlan(for: date)
+        } catch {
+            errorSubject.send(.saveFailed(error))
+        }
+    }
+
     func hasTimeConflict(_ form: DailyPlan.TaskFormData, on date: Date) -> Bool {
         let normalizedDate = calendar.startOfDay(for: date)
         let existingTasks = fetchTasks(for: normalizedDate).filter { $0.id != form.id }
@@ -218,7 +243,9 @@ final class DailyPlanInteractor: DailyPlanInteractorProtocol {
             return existing
         }
 
-        let newRecord = DailyRecord(date: date)
+        let weekday = calendar.component(.weekday, from: date)
+        let isWeekend = (weekday == 1 || weekday == 7)
+        let newRecord = DailyRecord(date: date, isHoliday: isWeekend)
         modelContext.insert(newRecord)
         return newRecord
     }
@@ -256,6 +283,33 @@ final class DailyPlanInteractor: DailyPlanInteractorProtocol {
             errorSubject.send(.fetchFailed(error))
             return nil
         }
+    }
+
+    private func findRecentSameModeTasks(before date: Date, isHoliday: Bool) -> [FocusTask]? {
+        // Search up to 14 days back for the most recent same-mode day with tasks
+        for dayOffset in 1...14 {
+            guard let candidateDate = calendar.date(byAdding: .day, value: -dayOffset, to: date) else {
+                continue
+            }
+            let normalizedCandidate = calendar.startOfDay(for: candidateDate)
+
+            let candidateRecord = fetchDailyRecord(for: normalizedCandidate)
+            let candidateIsHoliday: Bool
+            if let record = candidateRecord {
+                candidateIsHoliday = record.isHoliday
+            } else {
+                let weekday = calendar.component(.weekday, from: normalizedCandidate)
+                candidateIsHoliday = (weekday == 1 || weekday == 7)
+            }
+
+            guard candidateIsHoliday == isHoliday else { continue }
+
+            let tasks = fetchTasks(for: normalizedCandidate)
+            if !tasks.isEmpty {
+                return tasks
+            }
+        }
+        return nil
     }
 
     private func copyTasks(from sourceTasks: [FocusTask], to targetDate: Date) {

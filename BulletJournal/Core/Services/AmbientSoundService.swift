@@ -183,8 +183,7 @@ final class AmbientSoundService: AmbientSoundServiceProtocol {
         do {
             try AVAudioSession.sharedInstance().setCategory(
                 .playback,
-                mode: .default,
-                options: [.mixWithOthers]
+                mode: .default
             )
             try AVAudioSession.sharedInstance().setActive(true)
         } catch {

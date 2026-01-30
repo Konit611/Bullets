@@ -13,6 +13,9 @@ enum DailyPlan {
         static let defaultWakeHour: Int = 7
         static let defaultTimelineEndHour: Int = 23      // Timeline ends at this hour
         static let defaultBedTimePickerHour: Int = 22    // Default bedtime in DatePicker
+        static let holidayDefaultWakeHour: Int = 9
+        static let holidayDefaultTimelineEndHour: Int = 24
+        static let holidayDefaultBedTimePickerHour: Int = 23
         static let sleepEmojis = ["😩", "😑", "🙂", "☺️", "😆"]
     }
 
@@ -24,6 +27,7 @@ enum DailyPlan {
             let sleepRecord: SleepRecordData?
             let tasks: [TaskData]
             let needsSleepRecord: Bool
+            let isHoliday: Bool
         }
     }
 
@@ -75,6 +79,7 @@ enum DailyPlan {
         let currentTimeString: String?
         let wakeHour: Int
         let bedHour: Int
+        let isHoliday: Bool
 
         func withUpdatedTime(position: CGFloat?, timeString: String?) -> ViewModel {
             ViewModel(
@@ -86,7 +91,8 @@ enum DailyPlan {
                 currentTimePosition: position,
                 currentTimeString: timeString,
                 wakeHour: wakeHour,
-                bedHour: bedHour
+                bedHour: bedHour,
+                isHoliday: isHoliday
             )
         }
 
@@ -99,7 +105,8 @@ enum DailyPlan {
             currentTimePosition: nil,
             currentTimeString: nil,
             wakeHour: Configuration.defaultWakeHour,
-            bedHour: Configuration.defaultTimelineEndHour
+            bedHour: Configuration.defaultTimelineEndHour,
+            isHoliday: false
         )
     }
 

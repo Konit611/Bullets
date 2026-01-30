@@ -8,7 +8,7 @@ import SwiftData
 
 struct DailyPlanView: View {
     @StateObject private var presenter: DailyPlanPresenter
-    @Environment(\.dismiss) private var dismiss
+
 
     private let date: Date
 
@@ -42,12 +42,7 @@ struct DailyPlanView: View {
             }
         }
         .background(AppColors.background)
-        .navigationBarBackButtonHidden(true)
-        .toolbar {
-            ToolbarItem(placement: .navigationBarLeading) {
-                backButton
-            }
-        }
+        .navigationBarTitleDisplayMode(.inline)
         .onAppear {
             presenter.onAppear(date: date)
         }
@@ -85,28 +80,62 @@ struct DailyPlanView: View {
         }
     }
 
-    // MARK: - Header View (Spacer for toolbar)
+    // MARK: - Header View
 
     private var headerView: some View {
-        Color.clear
-            .frame(height: 8)
+        HStack(spacing: 0) {
+            Spacer()
+
+            HStack(spacing: 0) {
+                segmentButton(
+                    title: String(localized: "dailyPlan.weekday"),
+                    icon: "💼",
+                    isSelected: !presenter.viewModel.isHoliday
+                ) {
+                    if presenter.viewModel.isHoliday {
+                        presenter.toggleHoliday()
+                    }
+                }
+
+                segmentButton(
+                    title: String(localized: "dailyPlan.holiday"),
+                    icon: "🏖️",
+                    isSelected: presenter.viewModel.isHoliday
+                ) {
+                    if !presenter.viewModel.isHoliday {
+                        presenter.toggleHoliday()
+                    }
+                }
+            }
+            .background(AppColors.chevronBackground)
+            .clipShape(RoundedRectangle(cornerRadius: 8))
+        }
+        .padding(.horizontal, Layout.horizontalPadding)
+        .padding(.top, 4)
     }
 
-    // MARK: - Back Button
-
-    private var backButton: some View {
-        Button(action: { dismiss() }) {
-            ZStack {
-                Circle()
-                    .fill(AppColors.cardBackground)
-                    .frame(width: 40, height: 40)
-
-                Image(systemName: "chevron.left")
-                    .font(.system(size: 16, weight: .semibold))
-                    .foregroundStyle(AppColors.primaryText)
+    private func segmentButton(
+        title: String,
+        icon: String,
+        isSelected: Bool,
+        action: @escaping () -> Void
+    ) -> some View {
+        Button(action: action) {
+            HStack(spacing: 4) {
+                Text(icon)
+                    .font(.system(size: 12))
+                Text(title)
+                    .font(.system(size: 12, weight: isSelected ? .semibold : .regular))
             }
+            .padding(.horizontal, 12)
+            .padding(.vertical, 6)
+            .background(isSelected ? AppColors.cardBackground : Color.clear)
+            .clipShape(RoundedRectangle(cornerRadius: 6))
+            .foregroundStyle(isSelected ? AppColors.primaryText : AppColors.secondaryText)
         }
-        .accessibilityLabel(Text("accessibility.back"))
+        .buttonStyle(.plain)
+        .accessibilityLabel(title)
+        .accessibilityAddTraits(isSelected ? .isSelected : [])
     }
 
     // MARK: - Sleep Input View (When no sleep record)

@@ -70,17 +70,15 @@ struct TaskCardView: View {
 
                 Spacer()
 
-                if hasTask {
-                    Button(action: onChevronTapped) {
-                        ZStack {
-                            Circle()
-                                .fill(.white)
-                                .frame(width: 30, height: 30)
+                Button(action: onChevronTapped) {
+                    ZStack {
+                        Circle()
+                            .fill(.white)
+                            .frame(width: 30, height: 30)
 
-                            Image(systemName: "chevron.right")
-                                .font(.system(size: 12, weight: .semibold))
-                                .foregroundStyle(AppColors.secondaryText)
-                        }
+                        Image(systemName: "chevron.right")
+                            .font(.system(size: 12, weight: .semibold))
+                            .foregroundStyle(AppColors.secondaryText)
                     }
                 }
             }

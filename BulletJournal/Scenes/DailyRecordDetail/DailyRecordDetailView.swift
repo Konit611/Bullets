@@ -59,11 +59,7 @@ struct DailyRecordDetailView: View {
         }
         .background(AppColors.background)
         .navigationBarTitleDisplayMode(.inline)
-        .navigationBarBackButtonHidden(true)
         .toolbar {
-            ToolbarItem(placement: .navigationBarLeading) {
-                backButton
-            }
             ToolbarItem(placement: .principal) {
                 Text(presenter.viewModel.dateString)
                     .font(.system(size: 18, weight: .semibold))
@@ -95,20 +91,6 @@ struct DailyRecordDetailView: View {
         }
     }
 
-    private var backButton: some View {
-        Button {
-            dismiss()
-        } label: {
-            Image(systemName: "chevron.left")
-                .font(.system(size: 14, weight: .semibold))
-                .foregroundStyle(AppColors.primaryText)
-                .frame(width: 36, height: 36)
-                .background(AppColors.cardBackground)
-                .clipShape(Circle())
-                .shadow(color: .black.opacity(0.1), radius: 2, x: 0, y: 1)
-        }
-        .accessibilityLabel(String(localized: "accessibility.back"))
-    }
 }
 
 #Preview {

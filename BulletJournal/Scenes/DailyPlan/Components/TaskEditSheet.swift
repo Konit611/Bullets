@@ -113,6 +113,7 @@ struct TaskEditSheet: View {
                     displayedComponents: .hourAndMinute
                 )
                 .labelsHidden()
+                .environment(\.locale, Locale(identifier: "en_GB"))
             }
             .padding(12)
             .background(AppColors.cardBackground)
@@ -132,6 +133,7 @@ struct TaskEditSheet: View {
                     displayedComponents: .hourAndMinute
                 )
                 .labelsHidden()
+                .environment(\.locale, Locale(identifier: "en_GB"))
             }
             .padding(12)
             .background(AppColors.cardBackground)

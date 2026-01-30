@@ -177,6 +177,7 @@ struct SleepRecordCard: View {
                     displayedComponents: .hourAndMinute
                 )
                 .labelsHidden()
+                .environment(\.locale, Locale(identifier: "en_GB"))
                 .frame(maxWidth: .infinity, alignment: .leading)
 
                 Image(systemName: "clock")

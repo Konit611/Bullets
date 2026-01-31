@@ -80,6 +80,6 @@ struct ContentView: View {
 
 #Preview {
     ContentView()
-        .modelContainer(for: [Item.self, FocusTask.self, FocusSession.self, DailyRecord.self], inMemory: true)
+        .modelContainer(for: [FocusTask.self, FocusSession.self, DailyRecord.self], inMemory: true)
         .environmentObject(LocalizationManager.shared)
 }

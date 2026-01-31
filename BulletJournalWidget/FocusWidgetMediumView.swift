@@ -26,15 +26,12 @@ struct FocusWidgetMediumView: View {
 
     private var taskView: some View {
         HStack(spacing: 16) {
-            // Left: Task info
             VStack(alignment: .leading, spacing: Layout.spacing) {
-                // Task title
                 Text(entry.taskTitle ?? "")
                     .font(.system(size: 16, weight: .semibold))
                     .foregroundColor(AppColors.primaryText)
                     .lineLimit(2)
 
-                // Time slot
                 if let timeSlot = entry.timeSlot {
                     HStack(spacing: 4) {
                         Image(systemName: "clock")
@@ -47,7 +44,6 @@ struct FocusWidgetMediumView: View {
 
                 Spacer()
 
-                // Progress bar
                 GeometryReader { geometry in
                     ZStack(alignment: .leading) {
                         RoundedRectangle(cornerRadius: Layout.progressBarCornerRadius)
@@ -62,20 +58,16 @@ struct FocusWidgetMediumView: View {
                 .frame(height: Layout.progressBarHeight)
             }
 
-            // Right: Stats
             VStack(spacing: 6) {
-                // Progress percentage
                 Text("\(Int(entry.progressPercentage * 100))%")
                     .font(.system(size: 32, weight: .bold))
                     .foregroundColor(AppColors.primaryText)
 
-                // Focused time
-                Text(formatFocused(entry.totalFocusedSeconds))
+                Text(entry.formattedFocusedTime)
                     .font(.system(size: 12))
                     .foregroundColor(AppColors.progressGreen)
 
-                // Remaining time
-                Text(formatRemaining(entry.remainingSeconds))
+                Text(entry.formattedRemainingTime)
                     .font(.system(size: 11))
                     .foregroundColor(AppColors.secondaryText)
             }
@@ -90,34 +82,14 @@ struct FocusWidgetMediumView: View {
                 .font(.system(size: 32))
                 .foregroundColor(AppColors.secondaryText.opacity(0.5))
             VStack(alignment: .leading, spacing: 4) {
-                Text("No task scheduled")
+                Text("widget.noTaskScheduled")
                     .font(.system(size: 14, weight: .medium))
                     .foregroundColor(AppColors.secondaryText)
-                Text("Create a task to get started")
+                Text("widget.createTaskHint")
                     .font(.system(size: 12))
                     .foregroundColor(AppColors.secondaryText.opacity(0.7))
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-    }
-
-    private func formatFocused(_ seconds: Int) -> String {
-        let hours = seconds / 3600
-        let minutes = (seconds % 3600) / 60
-        if hours > 0 {
-            return "\(hours)h \(minutes)m focused"
-        } else {
-            return "\(minutes)m focused"
-        }
-    }
-
-    private func formatRemaining(_ seconds: Int) -> String {
-        let hours = seconds / 3600
-        let minutes = (seconds % 3600) / 60
-        if hours > 0 {
-            return "\(hours)h \(minutes)m left"
-        } else {
-            return "\(minutes)m left"
-        }
     }
 }

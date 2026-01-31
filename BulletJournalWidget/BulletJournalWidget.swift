@@ -46,11 +46,45 @@ struct FocusWidgetEntry: TimelineEntry {
             isEmpty: false
         )
     }
+
+    var formattedRemainingTime: String {
+        let hours = remainingSeconds / 3600
+        let minutes = (remainingSeconds % 3600) / 60
+        if hours > 0 {
+            return String(localized: "widget.remaining \(hours) \(minutes)")
+        } else {
+            return String(localized: "widget.remainingMinutes \(minutes)")
+        }
+    }
+
+    var formattedFocusedTime: String {
+        let hours = totalFocusedSeconds / 3600
+        let minutes = (totalFocusedSeconds % 3600) / 60
+        if hours > 0 {
+            return String(localized: "widget.focused \(hours) \(minutes)")
+        } else {
+            return String(localized: "widget.focusedMinutes \(minutes)")
+        }
+    }
 }
 
 // MARK: - Timeline Provider
 
 struct FocusWidgetProvider: TimelineProvider {
+    private static let sharedContainer: ModelContainer? = {
+        do {
+            let schema = Schema([FocusTask.self, FocusSession.self, DailyRecord.self])
+            let config = ModelConfiguration(
+                schema: schema,
+                url: AppConfiguration.sharedStoreURL,
+                allowsSave: false
+            )
+            return try ModelContainer(for: schema, configurations: [config])
+        } catch {
+            return nil
+        }
+    }()
+
     func placeholder(in context: Context) -> FocusWidgetEntry {
         .placeholder
     }
@@ -66,10 +100,9 @@ struct FocusWidgetProvider: TimelineProvider {
     func getTimeline(in context: Context, completion: @escaping (Timeline<FocusWidgetEntry>) -> Void) {
         let entry = fetchCurrentEntry()
 
-        // Refresh at task end time or 15 minutes, whichever is sooner
         let fifteenMinutes = Date().addingTimeInterval(15 * 60)
         let refreshDate: Date
-        if !entry.isEmpty, let taskTitle = entry.taskTitle, !taskTitle.isEmpty {
+        if !entry.isEmpty {
             refreshDate = min(entry.date.addingTimeInterval(TimeInterval(entry.remainingSeconds)), fifteenMinutes)
         } else {
             refreshDate = fifteenMinutes
@@ -80,18 +113,11 @@ struct FocusWidgetProvider: TimelineProvider {
     }
 
     private func fetchCurrentEntry() -> FocusWidgetEntry {
+        guard let container = Self.sharedContainer else { return .empty }
+
         let now = Date()
-
         do {
-            let schema = Schema([FocusTask.self, FocusSession.self, DailyRecord.self])
-            let config = ModelConfiguration(
-                schema: schema,
-                url: AppConfiguration.sharedStoreURL,
-                allowsSave: false
-            )
-            let container = try ModelContainer(for: schema, configurations: [config])
             let context = ModelContext(container)
-
             let descriptor = FetchDescriptor<FocusTask>(
                 predicate: #Predicate<FocusTask> { task in
                     task.startTime <= now && task.endTime >= now && !task.isCompleted

@@ -10,7 +10,6 @@ struct FocusWidgetSmallView: View {
     let entry: FocusWidgetEntry
 
     private enum Layout {
-        static let cornerRadius: CGFloat = 16
         static let padding: CGFloat = 14
         static let progressBarHeight: CGFloat = 6
         static let progressBarCornerRadius: CGFloat = 3
@@ -27,7 +26,6 @@ struct FocusWidgetSmallView: View {
 
     private var taskView: some View {
         VStack(alignment: .leading, spacing: Layout.spacing) {
-            // Task title
             Text(entry.taskTitle ?? "")
                 .font(.system(size: 15, weight: .semibold))
                 .foregroundColor(AppColors.primaryText)
@@ -35,12 +33,10 @@ struct FocusWidgetSmallView: View {
 
             Spacer()
 
-            // Progress percentage
             Text("\(Int(entry.progressPercentage * 100))%")
                 .font(.system(size: 28, weight: .bold))
                 .foregroundColor(AppColors.primaryText)
 
-            // Progress bar
             GeometryReader { geometry in
                 ZStack(alignment: .leading) {
                     RoundedRectangle(cornerRadius: Layout.progressBarCornerRadius)
@@ -54,8 +50,7 @@ struct FocusWidgetSmallView: View {
             }
             .frame(height: Layout.progressBarHeight)
 
-            // Remaining time
-            Text(formatRemaining(entry.remainingSeconds))
+            Text(entry.formattedRemainingTime)
                 .font(.system(size: 12))
                 .foregroundColor(AppColors.secondaryText)
         }
@@ -67,20 +62,10 @@ struct FocusWidgetSmallView: View {
             Image(systemName: "clock")
                 .font(.system(size: 28))
                 .foregroundColor(AppColors.secondaryText.opacity(0.5))
-            Text("No task")
+            Text("widget.noTask")
                 .font(.system(size: 13))
                 .foregroundColor(AppColors.secondaryText)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-    }
-
-    private func formatRemaining(_ seconds: Int) -> String {
-        let hours = seconds / 3600
-        let minutes = (seconds % 3600) / 60
-        if hours > 0 {
-            return "\(hours)h \(minutes)m left"
-        } else {
-            return "\(minutes)m left"
-        }
     }
 }

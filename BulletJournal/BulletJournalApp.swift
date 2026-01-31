@@ -14,7 +14,6 @@ struct BulletJournalApp: App {
 
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
-            Item.self,
             FocusTask.self,
             FocusSession.self,
             DailyRecord.self,
@@ -49,17 +48,19 @@ struct BulletJournalApp: App {
 
         guard fileManager.fileExists(atPath: defaultStore.path) else { return }
 
-        let suffixes = ["", "-wal", "-shm"]
-        for suffix in suffixes {
+        // Copy main store file first — abort entirely if this fails
+        do {
+            try fileManager.copyItem(atPath: defaultStore.path, toPath: destination.path)
+        } catch {
+            return
+        }
+
+        // WAL and SHM are optional — best effort
+        for suffix in ["-wal", "-shm"] {
             let srcPath = defaultStore.path + suffix
             let dstPath = destination.path + suffix
-
             guard fileManager.fileExists(atPath: srcPath) else { continue }
-            do {
-                try fileManager.copyItem(atPath: srcPath, toPath: dstPath)
-            } catch {
-                // Migration failed for this file, continue
-            }
+            try? fileManager.copyItem(atPath: srcPath, toPath: dstPath)
         }
     }
 

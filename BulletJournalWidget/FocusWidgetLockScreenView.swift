@@ -36,12 +36,18 @@ struct FocusWidgetLockScreenCircularView: View {
 struct FocusWidgetLockScreenRectangularView: View {
     let entry: FocusWidgetEntry
 
+    private enum Layout {
+        static let progressBarHeight: CGFloat = 4
+        static let progressBarCornerRadius: CGFloat = 2
+        static let percentageWidth: CGFloat = 30
+    }
+
     var body: some View {
         if entry.isEmpty {
             HStack(spacing: 6) {
                 Image(systemName: "clock")
                     .font(.system(size: 14))
-                Text("No task")
+                Text("widget.noTask")
                     .font(.system(size: 13))
             }
         } else {
@@ -51,22 +57,21 @@ struct FocusWidgetLockScreenRectangularView: View {
                     .lineLimit(1)
 
                 HStack(spacing: 4) {
-                    // Mini progress bar
                     GeometryReader { geometry in
                         ZStack(alignment: .leading) {
-                            RoundedRectangle(cornerRadius: 2)
+                            RoundedRectangle(cornerRadius: Layout.progressBarCornerRadius)
                                 .fill(.secondary.opacity(0.3))
-                                .frame(height: 4)
-                            RoundedRectangle(cornerRadius: 2)
+                                .frame(height: Layout.progressBarHeight)
+                            RoundedRectangle(cornerRadius: Layout.progressBarCornerRadius)
                                 .fill(.primary)
-                                .frame(width: geometry.size.width * entry.progressPercentage, height: 4)
+                                .frame(width: geometry.size.width * entry.progressPercentage, height: Layout.progressBarHeight)
                         }
                     }
-                    .frame(height: 4)
+                    .frame(height: Layout.progressBarHeight)
 
                     Text("\(Int(entry.progressPercentage * 100))%")
                         .font(.system(size: 11))
-                        .frame(width: 30, alignment: .trailing)
+                        .frame(width: Layout.percentageWidth, alignment: .trailing)
                 }
 
                 if let timeSlot = entry.timeSlot {

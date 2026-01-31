@@ -19,7 +19,15 @@ struct BulletJournalApp: App {
             FocusSession.self,
             DailyRecord.self,
         ])
-        let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
+
+        // Migrate existing DB to App Group if needed
+        Self.migrateStoreIfNeeded()
+
+        let modelConfiguration = ModelConfiguration(
+            schema: schema,
+            url: AppConfiguration.sharedStoreURL,
+            allowsSave: true
+        )
 
         do {
             return try ModelContainer(for: schema, configurations: [modelConfiguration])
@@ -27,6 +35,33 @@ struct BulletJournalApp: App {
             fatalError("Could not create ModelContainer: \(error)")
         }
     }()
+
+    private static func migrateStoreIfNeeded() {
+        let fileManager = FileManager.default
+        let destination = AppConfiguration.sharedStoreURL
+
+        // Skip if App Group store already exists
+        guard !fileManager.fileExists(atPath: destination.path) else { return }
+
+        // Find default SwiftData store in Application Support
+        guard let appSupport = fileManager.urls(for: .applicationSupportDirectory, in: .userDomainMask).first else { return }
+        let defaultStore = appSupport.appendingPathComponent("default.store")
+
+        guard fileManager.fileExists(atPath: defaultStore.path) else { return }
+
+        let suffixes = ["", "-wal", "-shm"]
+        for suffix in suffixes {
+            let srcPath = defaultStore.path + suffix
+            let dstPath = destination.path + suffix
+
+            guard fileManager.fileExists(atPath: srcPath) else { continue }
+            do {
+                try fileManager.copyItem(atPath: srcPath, toPath: dstPath)
+            } catch {
+                // Migration failed for this file, continue
+            }
+        }
+    }
 
     var body: some Scene {
         WindowGroup {

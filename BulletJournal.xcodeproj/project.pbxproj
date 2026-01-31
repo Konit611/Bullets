@@ -6,6 +6,12 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		C64DBC7E2F2DEA4B004ECC09 /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C64DBC7D2F2DEA4B004ECC09 /* WidgetKit.framework */; };
+		C64DBC802F2DEA4B004ECC09 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C64DBC7F2F2DEA4B004ECC09 /* SwiftUI.framework */; };
+		C64DBC8B2F2DEA4D004ECC09 /* BulletJournalWidgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = C64DBC7B2F2DEA4B004ECC09 /* BulletJournalWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		C624DAD92F26C6D600FBEB88 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -21,15 +27,60 @@
 			remoteGlobalIDString = C624DAC82F26C6D400FBEB88;
 			remoteInfo = BulletJournal;
 		};
+		C64DBC892F2DEA4D004ECC09 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = C624DAC12F26C6D400FBEB88 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = C64DBC7A2F2DEA4B004ECC09;
+			remoteInfo = BulletJournalWidgetExtension;
+		};
 /* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		C64DBC902F2DEA4D004ECC09 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				C64DBC8B2F2DEA4D004ECC09 /* BulletJournalWidgetExtension.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		C624DAC92F26C6D400FBEB88 /* BulletJournal.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BulletJournal.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		C624DAD82F26C6D600FBEB88 /* BulletJournalTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = BulletJournalTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		C624DAE22F26C6D600FBEB88 /* BulletJournalUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = BulletJournalUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		C64DBC7B2F2DEA4B004ECC09 /* BulletJournalWidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = BulletJournalWidgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		C64DBC7D2F2DEA4B004ECC09 /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
+		C64DBC7F2F2DEA4B004ECC09 /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
+		C64DBC912F2DEA86004ECC09 /* BulletJournalWidgetExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = BulletJournalWidgetExtension.entitlements; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		C64DBC8F2F2DEA4D004ECC09 /* Exceptions for "BulletJournalWidget" folder in "BulletJournalWidgetExtension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = C64DBC7A2F2DEA4B004ECC09 /* BulletJournalWidgetExtension */;
+		};
+		C64DBC932F2DEB49004ECC09 /* Exceptions for "BulletJournal" folder in "BulletJournalWidgetExtension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Core/Config/AppConfiguration.swift,
+				Core/Utilities/FocusTimeFormatter.swift,
+				DesignSystem/Colors/AppColors.swift,
+				"DesignSystem/Extensions/Color+Hex.swift",
+				Models/DailyRecord.swift,
+				Models/FocusSession.swift,
+				Models/FocusTask.swift,
+			);
+			target = C64DBC7A2F2DEA4B004ECC09 /* BulletJournalWidgetExtension */;
+		};
 		C6E5531A2F2852A700DE9BD8 /* Exceptions for "BulletJournal" folder in "BulletJournal" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
@@ -44,6 +95,7 @@
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
 				C6E5531A2F2852A700DE9BD8 /* Exceptions for "BulletJournal" folder in "BulletJournal" target */,
+				C64DBC932F2DEB49004ECC09 /* Exceptions for "BulletJournal" folder in "BulletJournalWidgetExtension" target */,
 			);
 			path = BulletJournal;
 			sourceTree = "<group>";
@@ -56,6 +108,14 @@
 		C624DAE52F26C6D600FBEB88 /* BulletJournalUITests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = BulletJournalUITests;
+			sourceTree = "<group>";
+		};
+		C64DBC812F2DEA4B004ECC09 /* BulletJournalWidget */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				C64DBC8F2F2DEA4D004ECC09 /* Exceptions for "BulletJournalWidget" folder in "BulletJournalWidgetExtension" target */,
+			);
+			path = BulletJournalWidget;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -82,15 +142,27 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		C64DBC782F2DEA4B004ECC09 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C64DBC802F2DEA4B004ECC09 /* SwiftUI.framework in Frameworks */,
+				C64DBC7E2F2DEA4B004ECC09 /* WidgetKit.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
 		C624DAC02F26C6D400FBEB88 = {
 			isa = PBXGroup;
 			children = (
+				C64DBC912F2DEA86004ECC09 /* BulletJournalWidgetExtension.entitlements */,
 				C624DACB2F26C6D400FBEB88 /* BulletJournal */,
 				C624DADB2F26C6D600FBEB88 /* BulletJournalTests */,
 				C624DAE52F26C6D600FBEB88 /* BulletJournalUITests */,
+				C64DBC812F2DEA4B004ECC09 /* BulletJournalWidget */,
+				C64DBC7C2F2DEA4B004ECC09 /* Frameworks */,
 				C624DACA2F26C6D400FBEB88 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -101,8 +173,18 @@
 				C624DAC92F26C6D400FBEB88 /* BulletJournal.app */,
 				C624DAD82F26C6D600FBEB88 /* BulletJournalTests.xctest */,
 				C624DAE22F26C6D600FBEB88 /* BulletJournalUITests.xctest */,
+				C64DBC7B2F2DEA4B004ECC09 /* BulletJournalWidgetExtension.appex */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		C64DBC7C2F2DEA4B004ECC09 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				C64DBC7D2F2DEA4B004ECC09 /* WidgetKit.framework */,
+				C64DBC7F2F2DEA4B004ECC09 /* SwiftUI.framework */,
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -115,10 +197,12 @@
 				C624DAC52F26C6D400FBEB88 /* Sources */,
 				C624DAC62F26C6D400FBEB88 /* Frameworks */,
 				C624DAC72F26C6D400FBEB88 /* Resources */,
+				C64DBC902F2DEA4D004ECC09 /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				C64DBC8A2F2DEA4D004ECC09 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				C624DACB2F26C6D400FBEB88 /* BulletJournal */,
@@ -176,6 +260,28 @@
 			productReference = C624DAE22F26C6D600FBEB88 /* BulletJournalUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
 		};
+		C64DBC7A2F2DEA4B004ECC09 /* BulletJournalWidgetExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = C64DBC8C2F2DEA4D004ECC09 /* Build configuration list for PBXNativeTarget "BulletJournalWidgetExtension" */;
+			buildPhases = (
+				C64DBC772F2DEA4B004ECC09 /* Sources */,
+				C64DBC782F2DEA4B004ECC09 /* Frameworks */,
+				C64DBC792F2DEA4B004ECC09 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				C64DBC812F2DEA4B004ECC09 /* BulletJournalWidget */,
+			);
+			name = BulletJournalWidgetExtension;
+			packageProductDependencies = (
+			);
+			productName = BulletJournalWidgetExtension;
+			productReference = C64DBC7B2F2DEA4B004ECC09 /* BulletJournalWidgetExtension.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -196,6 +302,9 @@
 					C624DAE12F26C6D600FBEB88 = {
 						CreatedOnToolsVersion = 26.2;
 						TestTargetID = C624DAC82F26C6D400FBEB88;
+					};
+					C64DBC7A2F2DEA4B004ECC09 = {
+						CreatedOnToolsVersion = 26.2;
 					};
 				};
 			};
@@ -218,6 +327,7 @@
 				C624DAC82F26C6D400FBEB88 /* BulletJournal */,
 				C624DAD72F26C6D600FBEB88 /* BulletJournalTests */,
 				C624DAE12F26C6D600FBEB88 /* BulletJournalUITests */,
+				C64DBC7A2F2DEA4B004ECC09 /* BulletJournalWidgetExtension */,
 			);
 		};
 /* End PBXProject section */
@@ -238,6 +348,13 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		C624DAE02F26C6D600FBEB88 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		C64DBC792F2DEA4B004ECC09 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -268,6 +385,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		C64DBC772F2DEA4B004ECC09 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -280,6 +404,11 @@
 			isa = PBXTargetDependency;
 			target = C624DAC82F26C6D400FBEB88 /* BulletJournal */;
 			targetProxy = C624DAE32F26C6D600FBEB88 /* PBXContainerItemProxy */;
+		};
+		C64DBC8A2F2DEA4D004ECC09 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = C64DBC7A2F2DEA4B004ECC09 /* BulletJournalWidgetExtension */;
+			targetProxy = C64DBC892F2DEA4D004ECC09 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -559,6 +688,68 @@
 			};
 			name = Release;
 		};
+		C64DBC8D2F2DEA4D004ECC09 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_ENTITLEMENTS = BulletJournalWidgetExtension.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = H24UL983G7;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = BulletJournalWidget/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = BulletJournalWidget;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = geunil.BulletJournal.BulletJournalWidget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		C64DBC8E2F2DEA4D004ECC09 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_ENTITLEMENTS = BulletJournalWidgetExtension.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = H24UL983G7;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = BulletJournalWidget/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = BulletJournalWidget;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = geunil.BulletJournal.BulletJournalWidget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -594,6 +785,15 @@
 			buildConfigurations = (
 				C624DAF32F26C6D600FBEB88 /* Debug */,
 				C624DAF42F26C6D600FBEB88 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		C64DBC8C2F2DEA4D004ECC09 /* Build configuration list for PBXNativeTarget "BulletJournalWidgetExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				C64DBC8D2F2DEA4D004ECC09 /* Debug */,
+				C64DBC8E2F2DEA4D004ECC09 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

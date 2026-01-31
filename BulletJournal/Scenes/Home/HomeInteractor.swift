@@ -6,6 +6,7 @@
 import Foundation
 import Combine
 import SwiftData
+import WidgetKit
 
 @MainActor
 protocol HomeInteractorProtocol: AnyObject {
@@ -238,6 +239,8 @@ final class HomeInteractor: HomeInteractorProtocol {
         if selectedSound != .none {
             ambientSoundService.play(selectedSound)
         }
+
+        reloadWidgetTimelines()
     }
 
     private func pauseTimer() {
@@ -254,6 +257,7 @@ final class HomeInteractor: HomeInteractorProtocol {
         session.pause()
 
         saveContext()
+        reloadWidgetTimelines()
     }
 
     private func resumeTimer() {
@@ -265,6 +269,7 @@ final class HomeInteractor: HomeInteractorProtocol {
         timerService.resume()
         session.resume()
         saveContext()
+        reloadWidgetTimelines()
     }
 
     private func stopTimer() {
@@ -285,6 +290,7 @@ final class HomeInteractor: HomeInteractorProtocol {
         ambientSoundService.stop()
 
         saveContext()
+        reloadWidgetTimelines()
     }
 
     private func calculatePreviousElapsed(for task: FocusTask, excluding currentSession: FocusSession) -> Int {
@@ -299,5 +305,9 @@ final class HomeInteractor: HomeInteractorProtocol {
         } catch {
             errorSubject.send(.saveFailed(error.localizedDescription))
         }
+    }
+
+    private func reloadWidgetTimelines() {
+        WidgetCenter.shared.reloadAllTimelines()
     }
 }

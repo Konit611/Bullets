@@ -78,6 +78,8 @@
 				Models/DailyRecord.swift,
 				Models/FocusSession.swift,
 				Models/FocusTask.swift,
+				Models/PlanTemplate.swift,
+				Resources/Localizable.xcstrings,
 			);
 			target = C64DBC7A2F2DEA4B004ECC09 /* BulletJournalWidgetExtension */;
 		};

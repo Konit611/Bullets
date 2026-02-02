@@ -107,7 +107,7 @@ final class HomeInteractor: HomeInteractorProtocol {
         let now = Date()
         let descriptor = FetchDescriptor<FocusTask>(
             predicate: #Predicate<FocusTask> { task in
-                task.startTime <= now && task.endTime >= now && !task.isCompleted
+                task.startTime <= now && task.endTime >= now && !task.isCompleted && task.isFocusTask
             },
             sortBy: [SortDescriptor(\.startTime)]
         )

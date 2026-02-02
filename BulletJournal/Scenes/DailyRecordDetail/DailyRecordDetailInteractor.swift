@@ -149,7 +149,7 @@ final class DailyRecordDetailInteractor: DailyRecordDetailInteractorProtocol {
 
         let dayTasks = allTasks.filter { task in
             let taskDate = calendar.startOfDay(for: task.startTime)
-            return taskDate == date
+            return taskDate == date && task.isFocusTask
         }
 
         let totalPlannedSeconds = dayTasks.reduce(0) { $0 + Int($1.plannedDuration) }

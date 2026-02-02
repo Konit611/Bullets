@@ -14,6 +14,7 @@ struct TaskEditSheet: View {
 
     @Environment(\.dismiss) private var dismiss
     @State private var showDeleteConfirmation = false
+    @State private var previousDuration: TimeInterval = 3600
     @FocusState private var isTitleFocused: Bool
 
     // MARK: - Layout Constants
@@ -32,6 +33,7 @@ struct TaskEditSheet: View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: Layout.verticalSpacing) {
+                    taskTypeSection
                     titleSection
                     timeSection
                     if hasConflict(form) {
@@ -72,6 +74,72 @@ struct TaskEditSheet: View {
         .presentationDetents([.medium])
         .onAppear {
             isTitleFocused = !isEditing
+            previousDuration = form.endTime.timeIntervalSince(form.startTime)
+        }
+        .onChange(of: form.startTime) { oldValue, newValue in
+            let duration = max(previousDuration, 5 * 60)
+            var newEnd = newValue.addingTimeInterval(duration)
+            newEnd = clampToSameDay(newEnd, referenceDate: newValue)
+            newEnd = roundToNearest5Minutes(newEnd)
+            form.endTime = newEnd
+            previousDuration = form.endTime.timeIntervalSince(form.startTime)
+        }
+        .onChange(of: form.endTime) { oldValue, newValue in
+            var endTime = clampToSameDay(newValue, referenceDate: form.startTime)
+            endTime = roundToNearest5Minutes(endTime)
+            if endTime != newValue {
+                form.endTime = endTime
+            }
+            if endTime <= form.startTime {
+                let duration = max(previousDuration, 5 * 60)
+                let newStart = endTime.addingTimeInterval(-duration)
+                form.startTime = roundToNearest5Minutes(newStart)
+            }
+            previousDuration = form.endTime.timeIntervalSince(form.startTime)
+        }
+    }
+
+    // MARK: - Task Type Section
+
+    private var taskTypeSection: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("dailyPlan.taskType")
+                .font(.system(size: 14, weight: .semibold))
+                .foregroundStyle(AppColors.primaryText)
+
+            HStack(spacing: 12) {
+                taskTypeButton(
+                    title: String(localized: "dailyPlan.taskType.focus"),
+                    icon: "target",
+                    isSelected: form.isFocusTask
+                ) {
+                    form.isFocusTask = true
+                }
+
+                taskTypeButton(
+                    title: String(localized: "dailyPlan.taskType.general"),
+                    icon: "calendar",
+                    isSelected: !form.isFocusTask
+                ) {
+                    form.isFocusTask = false
+                }
+            }
+        }
+    }
+
+    private func taskTypeButton(title: String, icon: String, isSelected: Bool, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            HStack(spacing: 6) {
+                Image(systemName: icon)
+                    .font(.system(size: 14))
+                Text(title)
+                    .font(.system(size: 14, weight: .medium))
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 10)
+            .background(isSelected ? AppColors.primaryText : AppColors.cardBackground)
+            .foregroundStyle(isSelected ? .white : AppColors.primaryText)
+            .clipShape(RoundedRectangle(cornerRadius: Layout.inputCornerRadius))
         }
     }
 
@@ -194,6 +262,33 @@ struct TaskEditSheet: View {
         }
         .padding(.top, 8)
     }
+
+    // MARK: - Time Helpers
+
+    private func roundToNearest5Minutes(_ date: Date) -> Date {
+        let calendar = Calendar.current
+        let components = calendar.dateComponents([.year, .month, .day, .hour, .minute], from: date)
+        guard let minute = components.minute else { return date }
+        let rounded = (minute + 2) / 5 * 5
+        var newComponents = components
+        newComponents.minute = rounded
+        newComponents.second = 0
+        return calendar.date(from: newComponents) ?? date
+    }
+
+    private func clampToSameDay(_ date: Date, referenceDate: Date) -> Date {
+        let calendar = Calendar.current
+        let refDay = calendar.startOfDay(for: referenceDate)
+        let dateDay = calendar.startOfDay(for: date)
+        if dateDay > refDay {
+            var components = calendar.dateComponents([.year, .month, .day], from: referenceDate)
+            components.hour = 23
+            components.minute = 55
+            components.second = 0
+            return calendar.date(from: components) ?? date
+        }
+        return date
+    }
 }
 
 // MARK: - Preview
@@ -214,7 +309,8 @@ struct TaskEditSheet: View {
             id: UUID(),
             title: "Work Session",
             startTime: Date(),
-            endTime: Date().addingTimeInterval(3600)
+            endTime: Date().addingTimeInterval(3600),
+            isFocusTask: true
         )),
         isEditing: true,
         onSave: {},
@@ -229,7 +325,8 @@ struct TaskEditSheet: View {
             id: nil,
             title: "Conflicting Task",
             startTime: Date(),
-            endTime: Date().addingTimeInterval(3600)
+            endTime: Date().addingTimeInterval(3600),
+            isFocusTask: false
         )),
         isEditing: false,
         onSave: {},

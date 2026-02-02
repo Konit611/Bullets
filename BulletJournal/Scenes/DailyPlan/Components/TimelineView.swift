@@ -80,19 +80,40 @@ struct TimelineView: View {
     }
 
     private func findEmptySlot(containingMinutesFromWake: CGFloat) -> (startHour: Int, startMinute: Int, endHour: Int, endMinute: Int) {
-        let tappedMinutes = Int(containingMinutesFromWake)
-
-        // Snap to the hour boundary that contains the tap
-        let tappedHourMinutes = (tappedMinutes / 60) * 60
-        let proposedStartMinutes = tappedHourMinutes
-        let proposedEndMinutes = tappedHourMinutes + 60
-
-        // Timeline boundaries in minutes from wake
         let timelineEndMinutes = (bedHour - wakeHour) * 60
 
-        // Clamp to timeline range
-        let clampedStart = max(0, min(proposedStartMinutes, timelineEndMinutes))
-        let clampedEnd = max(clampedStart, min(proposedEndMinutes, timelineEndMinutes))
+        // Build occupied intervals in minutes-from-wake from task blocks
+        let occupied: [(start: Int, end: Int)] = taskBlocks
+            .map { block in
+                let startMin = Int(block.yPosition / Layout.hourHeight * 60)
+                let endMin = Int((block.yPosition + block.height) / Layout.hourHeight * 60)
+                return (startMin, endMin)
+            }
+            .sorted { $0.start < $1.start }
+
+        // Build empty gaps between tasks
+        var gaps: [(start: Int, end: Int)] = []
+        var cursor = 0
+        for interval in occupied {
+            if interval.start > cursor {
+                gaps.append((cursor, interval.start))
+            }
+            cursor = max(cursor, interval.end)
+        }
+        if cursor < timelineEndMinutes {
+            gaps.append((cursor, timelineEndMinutes))
+        }
+
+        let tappedMinutes = Int(containingMinutesFromWake)
+
+        // Find the gap containing the tap
+        let gap = gaps.first(where: { tappedMinutes >= $0.start && tappedMinutes < $0.end })
+            ?? (max(0, min(tappedMinutes, timelineEndMinutes)), min(tappedMinutes + 60, timelineEndMinutes))
+
+        // Snap to 30-minute boundary, but clamp to gap start
+        let snappedStart = (tappedMinutes / 30) * 30
+        let clampedStart = max(gap.start, min(snappedStart, gap.end))
+        let clampedEnd = min(clampedStart + 60, gap.end)
 
         // Convert back to hours and minutes
         let startHour = wakeHour + clampedStart / 60
@@ -175,6 +196,7 @@ struct TimelineView: View {
                     yPosition: 0,
                     height: hourHeight * 1.5,  // 1.5 hours
                     isCurrentTask: false,
+                    isFocusTask: true,
                     progressPercentage: 0.5
                 ),
                 DailyPlan.TaskBlockViewModel(
@@ -185,6 +207,7 @@ struct TimelineView: View {
                     yPosition: hourHeight * 2,  // 2 hours from wake
                     height: hourHeight * 3,     // 3 hours duration
                     isCurrentTask: true,
+                    isFocusTask: true,
                     progressPercentage: 0.3
                 )
             ],

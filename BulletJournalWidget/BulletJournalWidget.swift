@@ -73,7 +73,7 @@ struct FocusWidgetEntry: TimelineEntry {
 struct FocusWidgetProvider: TimelineProvider {
     private static let sharedContainer: ModelContainer? = {
         do {
-            let schema = Schema([FocusTask.self, FocusSession.self, DailyRecord.self])
+            let schema = Schema([FocusTask.self, FocusSession.self, DailyRecord.self, PlanTemplate.self, PlanTemplateSlot.self])
             let config = ModelConfiguration(
                 schema: schema,
                 url: AppConfiguration.sharedStoreURL,

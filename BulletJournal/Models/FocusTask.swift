@@ -13,6 +13,7 @@ final class FocusTask {
     var startTime: Date
     var endTime: Date
     var isCompleted: Bool
+    var isFocusTask: Bool
     var createdAt: Date
 
     @Relationship(deleteRule: .cascade)
@@ -24,6 +25,7 @@ final class FocusTask {
         startTime: Date,
         endTime: Date,
         isCompleted: Bool = false,
+        isFocusTask: Bool = true,
         createdAt: Date = Date(),
         focusSessions: [FocusSession] = []
     ) {
@@ -32,6 +34,7 @@ final class FocusTask {
         self.startTime = startTime
         self.endTime = endTime
         self.isCompleted = isCompleted
+        self.isFocusTask = isFocusTask
         self.createdAt = createdAt
         self.focusSessions = focusSessions
     }

@@ -122,7 +122,8 @@ final class DailyPlanPresenter: ObservableObject {
             id: taskData.id,
             title: taskData.title,
             startTime: taskData.startTime,
-            endTime: taskData.endTime
+            endTime: taskData.endTime,
+            isFocusTask: taskData.isFocusTask
         )
         showTaskEditSheet = true
     }
@@ -337,6 +338,7 @@ final class DailyPlanPresenter: ObservableObject {
                 yPosition: yPosition,
                 height: height,
                 isCurrentTask: isCurrentTask,
+                isFocusTask: task.isFocusTask,
                 progressPercentage: task.progressPercentage
             )
         }

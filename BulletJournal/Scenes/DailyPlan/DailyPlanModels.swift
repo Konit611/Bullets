@@ -47,6 +47,7 @@ enum DailyPlan {
         let startTime: Date
         let endTime: Date
         let isCompleted: Bool
+        let isFocusTask: Bool
         let totalFocusedTime: TimeInterval
         let plannedDuration: TimeInterval
 
@@ -137,6 +138,7 @@ enum DailyPlan {
         let yPosition: CGFloat
         let height: CGFloat
         let isCurrentTask: Bool
+        let isFocusTask: Bool
         let progressPercentage: Double
     }
 
@@ -147,6 +149,7 @@ enum DailyPlan {
         var title: String
         var startTime: Date
         var endTime: Date
+        var isFocusTask: Bool
 
         var isValid: Bool {
             !title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty &&
@@ -164,7 +167,8 @@ enum DailyPlan {
                 id: nil,
                 title: "",
                 startTime: startTime,
-                endTime: endTime
+                endTime: endTime,
+                isFocusTask: true
             )
         }
     }

@@ -15,24 +15,31 @@ struct TaskBlockView: View {
         static let accentBarWidth: CGFloat = 5
         static let horizontalPadding: CGFloat = 12
         static let verticalPadding: CGFloat = 8
-        static let minHeight: CGFloat = 40
+        static let compactVerticalPadding: CGFloat = 2
+        static let compactFontSize: CGFloat = 11
+        static let normalFontSize: CGFloat = 14
+        static let compactThreshold: CGFloat = 40
     }
 
 
     // MARK: - Body
+
+    private var isCompact: Bool {
+        viewModel.height < Layout.compactThreshold
+    }
 
     var body: some View {
         GeometryReader { geometry in
             HStack(spacing: 0) {
                 // Left accent bar
                 Rectangle()
-                    .fill(AppColors.taskBlockAccent)
+                    .fill(viewModel.isFocusTask ? AppColors.taskBlockAccent : AppColors.secondaryText.opacity(0.4))
                     .frame(width: Layout.accentBarWidth)
 
                 // Content
-                VStack(alignment: .leading, spacing: 4) {
+                VStack(alignment: .leading, spacing: isCompact ? 0 : 4) {
                     Text(viewModel.title)
-                        .font(.system(size: 14, weight: .semibold))
+                        .font(.system(size: isCompact ? Layout.compactFontSize : Layout.normalFontSize, weight: .semibold))
                         .foregroundStyle(AppColors.primaryText)
                         .lineLimit(viewModel.height > 60 ? 2 : 1)
 
@@ -47,11 +54,11 @@ struct TaskBlockView: View {
                     }
                 }
                 .padding(.horizontal, Layout.horizontalPadding)
-                .padding(.vertical, Layout.verticalPadding)
+                .padding(.vertical, isCompact ? Layout.compactVerticalPadding : Layout.verticalPadding)
                 .frame(maxWidth: .infinity, alignment: .leading)
             }
-            .frame(height: max(viewModel.height, Layout.minHeight))
-            .background(AppColors.taskBlockBackground)
+            .frame(height: viewModel.height)
+            .background(viewModel.isFocusTask ? AppColors.taskBlockBackground : AppColors.taskBlockBackground.opacity(0.5))
             .clipShape(RoundedRectangle(cornerRadius: Layout.cornerRadius))
             .overlay {
                 if viewModel.isCurrentTask {
@@ -60,7 +67,7 @@ struct TaskBlockView: View {
                 }
             }
         }
-        .frame(height: max(viewModel.height, Layout.minHeight))
+        .frame(height: viewModel.height)
         .frame(maxWidth: .infinity)
         .padding(.trailing, 15)
         .accessibilityElement(children: .combine)
@@ -99,6 +106,7 @@ struct TaskBlockView: View {
             yPosition: 0,
             height: 198,
             isCurrentTask: false,
+            isFocusTask: true,
             progressPercentage: 0.5
         )
     )
@@ -117,6 +125,7 @@ struct TaskBlockView: View {
             yPosition: 0,
             height: 66,
             isCurrentTask: true,
+            isFocusTask: true,
             progressPercentage: 0.3
         )
     )
@@ -135,6 +144,7 @@ struct TaskBlockView: View {
             yPosition: 0,
             height: 33,
             isCurrentTask: false,
+            isFocusTask: false,
             progressPercentage: 0
         )
     )

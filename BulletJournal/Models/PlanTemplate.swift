@@ -37,6 +37,7 @@ final class PlanTemplateSlot {
     var endHour: Int
     var endMinute: Int
     var sortOrder: Int
+    var isFocusTask: Bool
 
     @Relationship(inverse: \PlanTemplate.timeSlots)
     var template: PlanTemplate?
@@ -48,7 +49,8 @@ final class PlanTemplateSlot {
         startMinute: Int,
         endHour: Int,
         endMinute: Int,
-        sortOrder: Int
+        sortOrder: Int,
+        isFocusTask: Bool = true
     ) {
         self.id = id
         self.title = title
@@ -57,5 +59,6 @@ final class PlanTemplateSlot {
         self.endHour = endHour
         self.endMinute = endMinute
         self.sortOrder = sortOrder
+        self.isFocusTask = isFocusTask
     }
 }

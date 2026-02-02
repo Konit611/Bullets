@@ -78,7 +78,7 @@ final class DailyPlanInteractor: DailyPlanInteractorProtocol {
         }
 
         // Fetch tasks for the date
-        var tasks = fetchTasks(for: normalizedDate)
+        let tasks = fetchTasks(for: normalizedDate)
 
         // Note: Template auto-copy is handled in saveSleepRecord, not here
 
@@ -100,6 +100,7 @@ final class DailyPlanInteractor: DailyPlanInteractorProtocol {
                 startTime: task.startTime,
                 endTime: task.endTime,
                 isCompleted: task.isCompleted,
+                isFocusTask: task.isFocusTask,
                 totalFocusedTime: task.totalFocusedTime,
                 plannedDuration: task.plannedDuration
             )
@@ -162,13 +163,15 @@ final class DailyPlanInteractor: DailyPlanInteractorProtocol {
                     existingTask.title = form.title
                     existingTask.startTime = form.startTime
                     existingTask.endTime = form.endTime
+                    existingTask.isFocusTask = form.isFocusTask
                 }
             } else {
                 // Create new task
                 let newTask = FocusTask(
                     title: form.title,
                     startTime: form.startTime,
-                    endTime: form.endTime
+                    endTime: form.endTime,
+                    isFocusTask: form.isFocusTask
                 )
                 modelContext.insert(newTask)
             }
@@ -354,7 +357,8 @@ final class DailyPlanInteractor: DailyPlanInteractorProtocol {
             let newTask = FocusTask(
                 title: slot.title,
                 startTime: newStartTime,
-                endTime: newEndTime
+                endTime: newEndTime,
+                isFocusTask: slot.isFocusTask
             )
             modelContext.insert(newTask)
         }
@@ -407,7 +411,8 @@ final class DailyPlanInteractor: DailyPlanInteractorProtocol {
                 startMinute: startComponents.minute ?? 0,
                 endHour: endComponents.hour ?? 0,
                 endMinute: endComponents.minute ?? 0,
-                sortOrder: index
+                sortOrder: index,
+                isFocusTask: task.isFocusTask
             )
             template.timeSlots.append(slot)
         }

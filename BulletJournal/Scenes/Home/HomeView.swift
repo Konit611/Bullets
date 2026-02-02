@@ -113,16 +113,10 @@ struct HomeView: View {
 
     private var appLogo: some View {
         HStack {
-            ZStack {
-                RoundedRectangle(cornerRadius: 8)
-                    .fill(AppColors.logoBackground)
-                    .frame(width: 40, height: 40)
-
-                // Placeholder for app icon - replace with actual image
-                Text("B")
-                    .font(.system(size: 20, weight: .bold))
-                    .foregroundStyle(AppColors.primaryText)
-            }
+            Image("AppLogoWhite")
+                .resizable()
+                .frame(width: 40, height: 40)
+                .clipShape(RoundedRectangle(cornerRadius: 8))
 
             Spacer()
         }

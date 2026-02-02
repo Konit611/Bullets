@@ -61,6 +61,13 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		C61415022F30BEF0004D0574 /* Exceptions for "BulletJournalWidget" folder in "BulletJournal" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Assets.xcassets,
+			);
+			target = C624DAC82F26C6D400FBEB88 /* BulletJournal */;
+		};
 		C64DBC8F2F2DEA4D004ECC09 /* Exceptions for "BulletJournalWidget" folder in "BulletJournalWidgetExtension" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
@@ -115,6 +122,7 @@
 		C64DBC812F2DEA4B004ECC09 /* BulletJournalWidget */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
+				C61415022F30BEF0004D0574 /* Exceptions for "BulletJournalWidget" folder in "BulletJournal" target */,
 				C64DBC8F2F2DEA4D004ECC09 /* Exceptions for "BulletJournalWidget" folder in "BulletJournalWidgetExtension" target */,
 			);
 			path = BulletJournalWidget;

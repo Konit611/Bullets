@@ -120,9 +120,6 @@
         }
       }
     },
-    "B" : {
-      "shouldTranslate" : false
-    },
     "dailyPlan.bedTime" : {
       "extractionState" : "manual",
       "localizations" : {

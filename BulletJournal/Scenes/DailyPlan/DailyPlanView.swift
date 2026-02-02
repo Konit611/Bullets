@@ -64,6 +64,17 @@ struct DailyPlanView: View {
             }
         }
         .alert(
+            Text("dailyPlan.toggleAlert.title"),
+            isPresented: $presenter.showToggleHolidayAlert
+        ) {
+            Button(String(localized: "dailyPlan.toggleAlert.cancel"), role: .cancel) { }
+            Button(String(localized: "dailyPlan.toggleAlert.confirm"), role: .destructive) {
+                presenter.confirmToggleHoliday()
+            }
+        } message: {
+            Text("dailyPlan.toggleAlert.message")
+        }
+        .alert(
             Text("Error"),
             isPresented: .init(
                 get: { presenter.error != nil },
@@ -138,20 +149,26 @@ struct DailyPlanView: View {
         .accessibilityAddTraits(isSelected ? .isSelected : [])
     }
 
+    // MARK: - Sleep Record Card (shared)
+
+    private var sleepRecordCard: some View {
+        SleepRecordCard(
+            viewModel: presenter.viewModel.sleepRecord ?? .empty,
+            isExpanded: $presenter.isSleepCardExpanded,
+            selectedBedTime: $presenter.selectedBedTime,
+            selectedWakeTime: $presenter.selectedWakeTime,
+            selectedSleepQuality: $presenter.selectedSleepQuality,
+            onSave: presenter.saveSleepRecord,
+            isEditable: true
+        )
+        .padding(.horizontal, Layout.horizontalPadding)
+    }
+
     // MARK: - Sleep Input View (When no sleep record)
 
     private var sleepInputView: some View {
         VStack(spacing: Layout.cardSpacing) {
-            SleepRecordCard(
-                viewModel: presenter.viewModel.sleepRecord ?? .empty,
-                isExpanded: $presenter.isSleepCardExpanded,
-                selectedBedTime: $presenter.selectedBedTime,
-                selectedWakeTime: $presenter.selectedWakeTime,
-                selectedSleepQuality: $presenter.selectedSleepQuality,
-                onSave: presenter.saveSleepRecord,
-                isEditable: true
-            )
-            .padding(.horizontal, Layout.horizontalPadding)
+            sleepRecordCard
 
             // Empty timeline card placeholder
             VStack {
@@ -178,16 +195,7 @@ struct DailyPlanView: View {
 
     private var mainContent: some View {
         VStack(spacing: Layout.cardSpacing) {
-            SleepRecordCard(
-                viewModel: presenter.viewModel.sleepRecord ?? .empty,
-                isExpanded: $presenter.isSleepCardExpanded,
-                selectedBedTime: $presenter.selectedBedTime,
-                selectedWakeTime: $presenter.selectedWakeTime,
-                selectedSleepQuality: $presenter.selectedSleepQuality,
-                onSave: presenter.saveSleepRecord,
-                isEditable: true
-            )
-            .padding(.horizontal, Layout.horizontalPadding)
+            sleepRecordCard
 
             // Timeline Card
             ScrollView(showsIndicators: false) {
@@ -227,14 +235,47 @@ struct DailyPlanView: View {
 
 // MARK: - Preview
 
-#Preview {
+#Preview("Empty") {
     let config = ModelConfiguration(isStoredInMemoryOnly: true)
     let container = try! ModelContainer(
-        for: FocusTask.self, FocusSession.self, DailyRecord.self,
+        for: FocusTask.self, FocusSession.self, DailyRecord.self, PlanTemplate.self, PlanTemplateSlot.self,
         configurations: config
     )
 
     return NavigationStack {
         DailyPlanView(date: Date(), modelContext: container.mainContext)
+    }
+}
+
+#Preview("With Tasks") {
+    let config = ModelConfiguration(isStoredInMemoryOnly: true)
+    let container = try! ModelContainer(
+        for: FocusTask.self, FocusSession.self, DailyRecord.self, PlanTemplate.self, PlanTemplateSlot.self,
+        configurations: config
+    )
+
+    let context = container.mainContext
+    let today = Calendar.current.startOfDay(for: Date())
+
+    // Add sleep record
+    let record = DailyRecord(date: today, bedTime: Calendar.current.date(bySettingHour: 22, minute: 0, second: 0, of: today), wakeTime: Calendar.current.date(bySettingHour: 7, minute: 0, second: 0, of: today))
+    context.insert(record)
+
+    // Add sample tasks
+    let task1 = FocusTask(
+        title: "Morning Study",
+        startTime: Calendar.current.date(bySettingHour: 8, minute: 0, second: 0, of: today)!,
+        endTime: Calendar.current.date(bySettingHour: 10, minute: 0, second: 0, of: today)!
+    )
+    let task2 = FocusTask(
+        title: "Project Work",
+        startTime: Calendar.current.date(bySettingHour: 14, minute: 0, second: 0, of: today)!,
+        endTime: Calendar.current.date(bySettingHour: 16, minute: 0, second: 0, of: today)!
+    )
+    context.insert(task1)
+    context.insert(task2)
+
+    return NavigationStack {
+        DailyPlanView(date: Date(), modelContext: context)
     }
 }

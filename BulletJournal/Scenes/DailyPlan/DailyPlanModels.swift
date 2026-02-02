@@ -14,8 +14,8 @@ enum DailyPlan {
         static let defaultTimelineEndHour: Int = 23      // Timeline ends at this hour
         static let defaultBedTimePickerHour: Int = 22    // Default bedtime in DatePicker
         static let holidayDefaultWakeHour: Int = 9
-        static let holidayDefaultTimelineEndHour: Int = 24
-        static let holidayDefaultBedTimePickerHour: Int = 23
+        static let holidayDefaultTimelineEndHour: Int = 23
+        static let holidayDefaultBedTimePickerHour: Int = 22
         static let sleepEmojis = ["😩", "😑", "🙂", "☺️", "😆"]
     }
 
@@ -28,17 +28,6 @@ enum DailyPlan {
             let tasks: [TaskData]
             let needsSleepRecord: Bool
             let isHoliday: Bool
-        }
-    }
-
-    // MARK: - Save Task Use Case
-
-    enum SaveTask {
-        struct Request {
-            let id: UUID?
-            let title: String
-            let startTime: Date
-            let endTime: Date
         }
     }
 

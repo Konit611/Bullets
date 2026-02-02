@@ -15,6 +15,7 @@ final class DailyPlanPresenter: ObservableObject {
     @Published var isSleepCardExpanded: Bool = false
     @Published var editingTaskForm: DailyPlan.TaskFormData?
     @Published var error: DailyPlan.DailyPlanError?
+    @Published var showToggleHolidayAlert: Bool = false
 
     // MARK: - Sleep Time Picker State
 
@@ -138,6 +139,10 @@ final class DailyPlanPresenter: ObservableObject {
     }
 
     func toggleHoliday() {
+        showToggleHolidayAlert = true
+    }
+
+    func confirmToggleHoliday() {
         interactor.toggleHoliday(for: currentDate)
     }
 
@@ -369,9 +374,8 @@ final class DailyPlanPresenter: ObservableObject {
 
         // Update every 30 seconds
         currentTimeTimer = Timer.scheduledTimer(withTimeInterval: 30, repeats: true) { [weak self] _ in
-            guard let self else { return }
-            Task { @MainActor in
-                self.updateCurrentTimePosition()
+            Task { @MainActor [weak self] in
+                self?.updateCurrentTimePosition()
             }
         }
     }

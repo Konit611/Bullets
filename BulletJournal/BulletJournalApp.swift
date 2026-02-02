@@ -17,6 +17,8 @@ struct BulletJournalApp: App {
             FocusTask.self,
             FocusSession.self,
             DailyRecord.self,
+            PlanTemplate.self,
+            PlanTemplateSlot.self,
         ])
 
         // Migrate existing DB to App Group if needed

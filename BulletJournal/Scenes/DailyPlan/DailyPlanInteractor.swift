@@ -80,13 +80,7 @@ final class DailyPlanInteractor: DailyPlanInteractorProtocol {
         // Fetch tasks for the date
         var tasks = fetchTasks(for: normalizedDate)
 
-        // Auto-copy from most recent same-mode day if no tasks
-        if tasks.isEmpty && dailyRecord?.hasSleepTimes == true {
-            if let sourceTasks = findRecentSameModeTasks(before: normalizedDate, isHoliday: isHoliday) {
-                copyTasks(from: sourceTasks, to: normalizedDate)
-                tasks = fetchTasks(for: normalizedDate)
-            }
-        }
+        // Note: Template auto-copy is handled in saveSleepRecord, not here
 
         let sleepRecordData: DailyPlan.SleepRecordData?
         if let record = dailyRecord {
@@ -135,6 +129,15 @@ final class DailyPlanInteractor: DailyPlanInteractorProtocol {
 
         do {
             try modelContext.save()
+
+            // Auto-copy from template if no tasks exist yet
+            let tasks = fetchTasks(for: normalizedDate)
+            if tasks.isEmpty {
+                if let template = fetchTemplate(isHoliday: record.isHoliday) {
+                    copyTasksFromTemplate(template, to: normalizedDate)
+                }
+            }
+
             loadDailyPlan(for: date)
         } catch {
             errorSubject.send(.saveFailed(error))
@@ -171,6 +174,7 @@ final class DailyPlanInteractor: DailyPlanInteractorProtocol {
             }
 
             try modelContext.save()
+            updateTemplate(for: date)
             taskSavedSubject.send(())
             loadDailyPlan(for: date)
         } catch {
@@ -187,6 +191,7 @@ final class DailyPlanInteractor: DailyPlanInteractorProtocol {
 
         do {
             try modelContext.save()
+            updateTemplate(for: taskDate)
             taskDeletedSubject.send(())
             loadDailyPlan(for: taskDate)
         } catch {
@@ -196,17 +201,47 @@ final class DailyPlanInteractor: DailyPlanInteractorProtocol {
 
     func toggleHoliday(for date: Date) {
         let normalizedDate = calendar.startOfDay(for: date)
-        let record = fetchOrCreateDailyRecord(for: normalizedDate)
 
-        record.isHoliday.toggle()
+        // 1. Determine current mode
+        let currentRecord = fetchDailyRecord(for: normalizedDate)
+        let currentIsHoliday: Bool
+        if let record = currentRecord {
+            currentIsHoliday = record.isHoliday
+        } else {
+            let weekday = calendar.component(.weekday, from: normalizedDate)
+            currentIsHoliday = (weekday == 1 || weekday == 7)
+        }
+        let newIsHoliday = !currentIsHoliday
+
+        // 2. Save current tasks to existing mode template
+        updateTemplate(for: normalizedDate)
+
+        // 3. Delete all tasks for this day (FocusSessions cascade-deleted)
+        let existingTasks = fetchTasks(for: normalizedDate)
+        for task in existingTasks {
+            modelContext.delete(task)
+        }
+
+        // 4. Update existing record (preserve mood, reflection, sleepQuality) or create new
+        let record = fetchOrCreateDailyRecord(for: normalizedDate)
+        record.isHoliday = newIsHoliday
+        record.updateSleepTimes(bedTime: nil, wakeTime: nil)
         record.updatedAt = Date()
 
         do {
             try modelContext.save()
-            loadDailyPlan(for: date)
         } catch {
             errorSubject.send(.saveFailed(error))
+            return
         }
+
+        // 6. Copy tasks from new mode template (if exists)
+        if let template = fetchTemplate(isHoliday: newIsHoliday) {
+            copyTasksFromTemplate(template, to: normalizedDate)
+        }
+
+        // 7. Reload — needsSleepRecord will be true since DailyRecord has no sleep times
+        loadDailyPlan(for: date)
     }
 
     func hasTimeConflict(_ form: DailyPlan.TaskFormData, on date: Date) -> Bool {
@@ -285,49 +320,31 @@ final class DailyPlanInteractor: DailyPlanInteractorProtocol {
         }
     }
 
-    private func findRecentSameModeTasks(before date: Date, isHoliday: Bool) -> [FocusTask]? {
-        // Search up to 14 days back for the most recent same-mode day with tasks
-        for dayOffset in 1...14 {
-            guard let candidateDate = calendar.date(byAdding: .day, value: -dayOffset, to: date) else {
-                continue
-            }
-            let normalizedCandidate = calendar.startOfDay(for: candidateDate)
-
-            let candidateRecord = fetchDailyRecord(for: normalizedCandidate)
-            let candidateIsHoliday: Bool
-            if let record = candidateRecord {
-                candidateIsHoliday = record.isHoliday
-            } else {
-                let weekday = calendar.component(.weekday, from: normalizedCandidate)
-                candidateIsHoliday = (weekday == 1 || weekday == 7)
-            }
-
-            guard candidateIsHoliday == isHoliday else { continue }
-
-            let tasks = fetchTasks(for: normalizedCandidate)
-            if !tasks.isEmpty {
-                return tasks
-            }
+    private func fetchTemplate(isHoliday: Bool) -> PlanTemplate? {
+        let descriptor = FetchDescriptor<PlanTemplate>()
+        do {
+            let templates = try modelContext.fetch(descriptor)
+            return templates.first { $0.isHoliday == isHoliday }
+        } catch {
+            errorSubject.send(.fetchFailed(error))
+            return nil
         }
-        return nil
     }
 
-    private func copyTasks(from sourceTasks: [FocusTask], to targetDate: Date) {
+    private func copyTasksFromTemplate(_ template: PlanTemplate, to targetDate: Date) {
         let targetDayStart = calendar.startOfDay(for: targetDate)
+        let sortedSlots = template.timeSlots.sorted { $0.sortOrder < $1.sortOrder }
 
-        for sourceTask in sourceTasks {
-            let startTimeComponents = calendar.dateComponents([.hour, .minute], from: sourceTask.startTime)
-            let endTimeComponents = calendar.dateComponents([.hour, .minute], from: sourceTask.endTime)
-
+        for slot in sortedSlots {
             guard let newStartTime = calendar.date(
-                bySettingHour: startTimeComponents.hour ?? 0,
-                minute: startTimeComponents.minute ?? 0,
+                bySettingHour: slot.startHour,
+                minute: slot.startMinute,
                 second: 0,
                 of: targetDayStart
             ),
             let newEndTime = calendar.date(
-                bySettingHour: endTimeComponents.hour ?? 0,
-                minute: endTimeComponents.minute ?? 0,
+                bySettingHour: slot.endHour,
+                minute: slot.endMinute,
                 second: 0,
                 of: targetDayStart
             ) else {
@@ -335,11 +352,64 @@ final class DailyPlanInteractor: DailyPlanInteractorProtocol {
             }
 
             let newTask = FocusTask(
-                title: sourceTask.title,
+                title: slot.title,
                 startTime: newStartTime,
                 endTime: newEndTime
             )
             modelContext.insert(newTask)
+        }
+
+        do {
+            try modelContext.save()
+        } catch {
+            errorSubject.send(.saveFailed(error))
+        }
+    }
+
+    private func updateTemplate(for date: Date) {
+        let normalizedDate = calendar.startOfDay(for: date)
+
+        // Determine current mode for this date
+        let dailyRecord = fetchDailyRecord(for: normalizedDate)
+        let isHoliday: Bool
+        if let record = dailyRecord {
+            isHoliday = record.isHoliday
+        } else {
+            let weekday = calendar.component(.weekday, from: normalizedDate)
+            isHoliday = (weekday == 1 || weekday == 7)
+        }
+
+        let tasks = fetchTasks(for: normalizedDate)
+
+        // Fetch or create template
+        let template: PlanTemplate
+        if let existing = fetchTemplate(isHoliday: isHoliday) {
+            // Remove old slots
+            for slot in existing.timeSlots {
+                modelContext.delete(slot)
+            }
+            existing.timeSlots = []
+            existing.updatedAt = Date()
+            template = existing
+        } else {
+            template = PlanTemplate(isHoliday: isHoliday)
+            modelContext.insert(template)
+        }
+
+        // Create new slots from current tasks
+        for (index, task) in tasks.enumerated() {
+            let startComponents = calendar.dateComponents([.hour, .minute], from: task.startTime)
+            let endComponents = calendar.dateComponents([.hour, .minute], from: task.endTime)
+
+            let slot = PlanTemplateSlot(
+                title: task.title,
+                startHour: startComponents.hour ?? 0,
+                startMinute: startComponents.minute ?? 0,
+                endHour: endComponents.hour ?? 0,
+                endMinute: endComponents.minute ?? 0,
+                sortOrder: index
+            )
+            template.timeSlots.append(slot)
         }
 
         do {

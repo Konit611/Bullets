@@ -70,6 +70,12 @@ struct HomeView: View {
                 presenter.onAppear()
             }
         }
+        .onChange(of: presenter.showFocusView) { _, isShowing in
+            if !isShowing {
+                // Returned from Focus - reload current task
+                presenter.onAppear()
+            }
+        }
         .sheet(isPresented: $showSoundPicker) {
             SoundPickerView(
                 selectedSound: .init(

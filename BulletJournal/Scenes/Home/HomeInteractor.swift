@@ -44,6 +44,7 @@ final class HomeInteractor: HomeInteractorProtocol {
     private(set) var currentTask: FocusTask?
     private(set) var currentSession: FocusSession?
     private var selectedSound: AmbientSound = .none
+    private var wasSoundPlayingBeforePause: Bool = false
 
     // MARK: - Publishers
 
@@ -251,6 +252,12 @@ final class HomeInteractor: HomeInteractorProtocol {
 
         timerService.pause()
 
+        // 음악 상태 저장 후 Pause
+        wasSoundPlayingBeforePause = ambientSoundService.isPlaying
+        if wasSoundPlayingBeforePause {
+            ambientSoundService.pause()
+        }
+
         // 이 세션의 시간만 저장 (총 시간 - 이전 세션들 누적)
         let previousElapsed = calculatePreviousElapsed(for: task, excluding: session)
         session.elapsedSeconds = timerService.elapsedSeconds - previousElapsed
@@ -267,6 +274,12 @@ final class HomeInteractor: HomeInteractorProtocol {
         }
 
         timerService.resume()
+
+        // Pause 전 재생중이었으면 Resume
+        if wasSoundPlayingBeforePause {
+            ambientSoundService.resume()
+        }
+
         session.resume()
         saveContext()
         reloadWidgetTimelines()
@@ -286,8 +299,9 @@ final class HomeInteractor: HomeInteractorProtocol {
         session.complete()
         currentSession = nil
 
-        // 세션 종료 시 사운드도 정지
+        // 세션 종료 시 사운드도 정지 및 상태 초기화
         ambientSoundService.stop()
+        wasSoundPlayingBeforePause = false
 
         saveContext()
         reloadWidgetTimelines()

@@ -253,7 +253,8 @@ struct FocusView: View {
     let interactor = HomeInteractor(
         modelContext: container.mainContext,
         timerService: ServiceContainer.shared.timerService,
-        ambientSoundService: ServiceContainer.shared.ambientSoundService
+        ambientSoundService: ServiceContainer.shared.ambientSoundService,
+        nowPlayingService: ServiceContainer.shared.nowPlayingService
     )
     let presenter = HomePresenter(interactor: interactor)
 

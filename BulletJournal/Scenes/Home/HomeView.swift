@@ -21,7 +21,8 @@ struct HomeView: View {
         let interactor = HomeInteractor(
             modelContext: modelContext,
             timerService: serviceContainer.timerService,
-            ambientSoundService: serviceContainer.ambientSoundService
+            ambientSoundService: serviceContainer.ambientSoundService,
+            nowPlayingService: serviceContainer.nowPlayingService
         )
         _presenter = StateObject(wrappedValue: HomePresenter(interactor: interactor))
     }

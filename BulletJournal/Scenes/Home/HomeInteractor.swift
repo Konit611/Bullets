@@ -38,6 +38,9 @@ final class HomeInteractor: HomeInteractorProtocol {
     private let modelContext: ModelContext
     private let timerService: TimerServiceProtocol
     private let ambientSoundService: AmbientSoundServiceProtocol
+    private let nowPlayingService: NowPlayingServiceProtocol
+
+    private var cancellables = Set<AnyCancellable>()
 
     // MARK: - State
 
@@ -95,11 +98,35 @@ final class HomeInteractor: HomeInteractorProtocol {
     init(
         modelContext: ModelContext,
         timerService: TimerServiceProtocol,
-        ambientSoundService: AmbientSoundServiceProtocol
+        ambientSoundService: AmbientSoundServiceProtocol,
+        nowPlayingService: NowPlayingServiceProtocol
     ) {
         self.modelContext = modelContext
         self.timerService = timerService
         self.ambientSoundService = ambientSoundService
+        self.nowPlayingService = nowPlayingService
+
+        bindTimerTick()
+    }
+
+    private func bindTimerTick() {
+        timerService.tickPublisher
+            .sink { [weak self] elapsedSeconds in
+                self?.updateNowPlayingIfNeeded(elapsedSeconds: elapsedSeconds)
+            }
+            .store(in: &cancellables)
+    }
+
+    private func updateNowPlayingIfNeeded(elapsedSeconds: Int, isPlaying: Bool? = nil) {
+        guard let task = currentTask, timerService.state != .idle else { return }
+
+        nowPlayingService.updateNowPlayingInfo(
+            taskTitle: task.title,
+            soundName: selectedSound.localizedName,
+            elapsedSeconds: elapsedSeconds,
+            durationSeconds: Int(task.plannedDuration),
+            isPlaying: isPlaying ?? (timerService.state == .running)
+        )
     }
 
     // MARK: - Use Cases
@@ -165,8 +192,12 @@ final class HomeInteractor: HomeInteractorProtocol {
     func toggleSound() {
         if ambientSoundService.isPlaying {
             ambientSoundService.pause()
+            // Update state so timer resume won't auto-resume sound
+            wasSoundPlayingBeforePause = false
         } else {
             ambientSoundService.resume()
+            // Update state so timer pause/resume will preserve sound playing
+            wasSoundPlayingBeforePause = true
         }
     }
 
@@ -241,7 +272,22 @@ final class HomeInteractor: HomeInteractorProtocol {
             ambientSoundService.play(selectedSound)
         }
 
+        // 잠금 화면 제어 설정
+        setupNowPlayingRemoteCommands()
+        updateNowPlayingIfNeeded(elapsedSeconds: previousElapsed, isPlaying: true)
+
         reloadWidgetTimelines()
+    }
+
+    private func setupNowPlayingRemoteCommands() {
+        nowPlayingService.setupRemoteCommands(
+            onPlay: { [weak self] in
+                self?.handleTimerAction(.resume)
+            },
+            onPause: { [weak self] in
+                self?.handleTimerAction(.pause)
+            }
+        )
     }
 
     private func pauseTimer() {
@@ -258,6 +304,9 @@ final class HomeInteractor: HomeInteractorProtocol {
             ambientSoundService.pause()
         }
 
+        // 잠금 화면 상태 업데이트
+        updateNowPlayingIfNeeded(elapsedSeconds: timerService.elapsedSeconds, isPlaying: false)
+
         // 이 세션의 시간만 저장 (총 시간 - 이전 세션들 누적)
         let previousElapsed = calculatePreviousElapsed(for: task, excluding: session)
         session.elapsedSeconds = timerService.elapsedSeconds - previousElapsed
@@ -268,7 +317,7 @@ final class HomeInteractor: HomeInteractorProtocol {
     }
 
     private func resumeTimer() {
-        guard let session = currentSession else {
+        guard let task = currentTask, let session = currentSession else {
             errorSubject.send(.timerNotRunning)
             return
         }
@@ -279,6 +328,9 @@ final class HomeInteractor: HomeInteractorProtocol {
         if wasSoundPlayingBeforePause {
             ambientSoundService.resume()
         }
+
+        // 잠금 화면 상태 업데이트
+        updateNowPlayingIfNeeded(elapsedSeconds: timerService.elapsedSeconds, isPlaying: true)
 
         session.resume()
         saveContext()
@@ -302,6 +354,9 @@ final class HomeInteractor: HomeInteractorProtocol {
         // 세션 종료 시 사운드도 정지 및 상태 초기화
         ambientSoundService.stop()
         wasSoundPlayingBeforePause = false
+
+        // 잠금 화면 정보 제거
+        nowPlayingService.clearNowPlayingInfo()
 
         saveContext()
         reloadWidgetTimelines()

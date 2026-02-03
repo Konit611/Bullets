@@ -14,6 +14,7 @@ final class HomePresenterTests: XCTestCase {
     private var interactor: HomeInteractor!
     private var mockTimerService: MockTimerService!
     private var mockAmbientSoundService: MockAmbientSoundService!
+    private var mockNowPlayingService: MockNowPlayingService!
     private var modelContainer: ModelContainer!
     private var modelContext: ModelContext!
     private var cancellables = Set<AnyCancellable>()
@@ -30,11 +31,13 @@ final class HomePresenterTests: XCTestCase {
 
         mockTimerService = MockTimerService()
         mockAmbientSoundService = MockAmbientSoundService()
+        mockNowPlayingService = MockNowPlayingService()
 
         interactor = HomeInteractor(
             modelContext: modelContext,
             timerService: mockTimerService,
-            ambientSoundService: mockAmbientSoundService
+            ambientSoundService: mockAmbientSoundService,
+            nowPlayingService: mockNowPlayingService
         )
 
         sut = HomePresenter(interactor: interactor)
@@ -46,6 +49,7 @@ final class HomePresenterTests: XCTestCase {
         interactor = nil
         mockTimerService = nil
         mockAmbientSoundService = nil
+        mockNowPlayingService = nil
         modelContext = nil
         modelContainer = nil
         try await super.tearDown()

@@ -15,7 +15,7 @@ struct HomeView: View {
 
     init(
         modelContext: ModelContext,
-        serviceContainer: ServiceContainer = .shared
+        serviceContainer: ServiceContainer
     ) {
         self.modelContext = modelContext
         let interactor = HomeInteractor(
@@ -147,6 +147,6 @@ struct HomeView: View {
     container.mainContext.insert(task)
 
     return NavigationStack {
-        HomeView(modelContext: container.mainContext)
+        HomeView(modelContext: container.mainContext, serviceContainer: .shared)
     }
 }

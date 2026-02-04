@@ -41,7 +41,7 @@ struct ContentView: View {
     private var mainContent: some View {
         TabView(selection: $selectedTab) {
             NavigationStack {
-                HomeView(modelContext: modelContext)
+                HomeView(modelContext: modelContext, serviceContainer: .shared)
             }
             .tabItem {
                 Label {

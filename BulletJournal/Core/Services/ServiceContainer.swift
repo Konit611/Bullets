@@ -7,9 +7,7 @@ import Foundation
 
 @MainActor
 final class ServiceContainer {
-    /// Singleton instance. Uses `nonisolated(unsafe)` because it's initialized once at app launch
-    /// and only read thereafter, making it safe to access from default parameter contexts.
-    nonisolated(unsafe) static let shared = ServiceContainer()
+    static let shared = ServiceContainer()
 
     let timerService: TimerServiceProtocol
     let ambientSoundService: AmbientSoundServiceProtocol

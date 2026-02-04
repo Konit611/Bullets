@@ -179,7 +179,8 @@ final class HomePresenter: ObservableObject {
         }
 
         hasCurrentTask = true
-        taskViewModel = mapToTaskViewModel(task)
+        let elapsed = interactor.currentElapsedSeconds
+        taskViewModel = mapToTaskViewModel(task, additionalElapsed: elapsed)
     }
 
     private func handleTimerTick(elapsedSeconds: Int) {
@@ -207,6 +208,13 @@ final class HomePresenter: ObservableObject {
             state: state,
             buttonTitle: buttonTitle(for: state)
         )
+
+        // idle 상태에서는 taskViewModel 업데이트 생략
+        // - stop() 시 session.complete() 전에 호출되어 stale 데이터 표시 위험
+        // - 이후 onAppear() → presentCurrentTask()에서 정확한 값으로 갱신됨
+        if state != .idle, let task = interactor.currentTask {
+            taskViewModel = mapToTaskViewModel(task, additionalElapsed: elapsed)
+        }
     }
 
     private func mapToTaskViewModel(_ task: FocusTask, additionalElapsed: Int = 0) -> Home.TaskCardViewModel {

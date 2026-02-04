@@ -317,7 +317,7 @@ final class HomeInteractor: HomeInteractorProtocol {
     }
 
     private func resumeTimer() {
-        guard let task = currentTask, let session = currentSession else {
+        guard let _ = currentTask, let session = currentSession else {
             errorSubject.send(.timerNotRunning)
             return
         }

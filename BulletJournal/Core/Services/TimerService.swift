@@ -123,7 +123,9 @@ final class TimerService: TimerServiceProtocol {
         timer?.invalidate()
         let newTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
             guard let self else { return }
-            Task { @MainActor in
+            // Timer callback fires on main thread (RunLoop.current is main for @MainActor class)
+            // Use assumeIsolated for synchronous execution without Task overhead
+            MainActor.assumeIsolated {
                 self.tick()
             }
         }

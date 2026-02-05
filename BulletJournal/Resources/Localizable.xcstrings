@@ -1316,6 +1316,29 @@
         }
       }
     },
+    "error.taskNotFound" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Task not found"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "タスクが見つかりません"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "작업을 찾을 수 없습니다"
+          }
+        }
+      }
+    },
     "error.timeConflict" : {
       "extractionState" : "manual",
       "localizations" : {

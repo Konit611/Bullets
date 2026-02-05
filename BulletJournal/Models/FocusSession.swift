@@ -41,16 +41,31 @@ final class FocusSession {
         TimeInterval(elapsedSeconds)
     }
 
-    func complete(at date: Date = Date()) {
+    /// Complete the session (valid from .inProgress or .paused state)
+    /// - Returns: true if state was changed, false if already completed
+    @discardableResult
+    func complete(at date: Date = Date()) -> Bool {
+        guard status != .completed else { return false }
         self.endedAt = date
         self.status = .completed
+        return true
     }
 
-    func pause() {
+    /// Pause the session (only valid from .inProgress state)
+    /// - Returns: true if state was changed, false if invalid transition
+    @discardableResult
+    func pause() -> Bool {
+        guard status == .inProgress else { return false }
         self.status = .paused
+        return true
     }
 
-    func resume() {
+    /// Resume the session (only valid from .paused state)
+    /// - Returns: true if state was changed, false if invalid transition
+    @discardableResult
+    func resume() -> Bool {
+        guard status == .paused else { return false }
         self.status = .inProgress
+        return true
     }
 }

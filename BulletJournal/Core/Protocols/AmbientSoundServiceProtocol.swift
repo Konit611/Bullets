@@ -6,6 +6,7 @@
 import Foundation
 import Combine
 
+@MainActor
 protocol AmbientSoundServiceProtocol: AnyObject {
     var currentSound: AmbientSound { get }
     var isPlaying: Bool { get }

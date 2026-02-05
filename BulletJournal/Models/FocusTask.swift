@@ -8,6 +8,13 @@ import SwiftData
 
 @Model
 final class FocusTask {
+    // Static cached formatter for time strings (performance optimization)
+    private static let timeFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "HH:mm"
+        return formatter
+    }()
+
     var id: UUID
     var title: String
     var startTime: Date
@@ -55,21 +62,15 @@ final class FocusTask {
     }
 
     var timeSlotString: String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "HH:mm"
-        return "\(formatter.string(from: startTime))-\(formatter.string(from: endTime))"
+        "\(Self.timeFormatter.string(from: startTime))-\(Self.timeFormatter.string(from: endTime))"
     }
 
     var startTimeString: String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "HH:mm"
-        return formatter.string(from: startTime)
+        Self.timeFormatter.string(from: startTime)
     }
 
     var endTimeString: String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "HH:mm"
-        return formatter.string(from: endTime)
+        Self.timeFormatter.string(from: endTime)
     }
 
     var durationString: String {

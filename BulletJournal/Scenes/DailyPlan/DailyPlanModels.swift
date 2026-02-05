@@ -180,6 +180,7 @@ enum DailyPlan {
         case invalidTimeSlot
         case saveFailed(Error)
         case fetchFailed(Error)
+        case taskNotFound
 
         var errorDescription: String? {
             switch self {
@@ -191,6 +192,8 @@ enum DailyPlan {
                 return String(localized: "error.saveFailed \(error.localizedDescription)")
             case .fetchFailed(let error):
                 return String(localized: "error.fetchFailed \(error.localizedDescription)")
+            case .taskNotFound:
+                return String(localized: "error.taskNotFound")
             }
         }
     }

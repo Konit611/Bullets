@@ -7,6 +7,7 @@ import Foundation
 import Combine
 @testable import BulletJournal
 
+@MainActor
 final class MockAmbientSoundService: AmbientSoundServiceProtocol {
     private(set) var currentSound: AmbientSound = .none
     private(set) var isPlaying: Bool = false
@@ -64,5 +65,13 @@ final class MockAmbientSoundService: AmbientSoundServiceProtocol {
     func setVolume(_ volume: Float) {
         setVolumeCallCount += 1
         lastVolume = volume
+    }
+
+    func resetCallCounts() {
+        playCallCount = 0
+        pauseCallCount = 0
+        resumeCallCount = 0
+        stopCallCount = 0
+        setVolumeCallCount = 0
     }
 }

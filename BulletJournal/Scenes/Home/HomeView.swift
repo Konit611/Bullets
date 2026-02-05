@@ -13,6 +13,11 @@ struct HomeView: View {
 
     private let modelContext: ModelContext
 
+    /// Creates a HomeView with the given dependencies.
+    ///
+    /// Note: This View is used as a Tab root, so StateObject initialization here is safe.
+    /// If this View were used in List/ForEach, consider extracting Interactor creation
+    /// to a parent View or using @EnvironmentObject.
     init(
         modelContext: ModelContext,
         serviceContainer: ServiceContainer

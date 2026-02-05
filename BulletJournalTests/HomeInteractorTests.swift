@@ -23,7 +23,7 @@ final class HomeInteractorTests: XCTestCase {
 
         let config = ModelConfiguration(isStoredInMemoryOnly: true)
         modelContainer = try ModelContainer(
-            for: FocusTask.self, FocusSession.self,
+            for: FocusTask.self, FocusSession.self, DailyRecord.self,
             configurations: config
         )
         modelContext = ModelContext(modelContainer)
@@ -224,7 +224,32 @@ final class HomeInteractorTests: XCTestCase {
 
     // MARK: - selectSound Tests
 
-    func testSelectSound_playsSelectedSound() {
+    func testSelectSound_whenTimerIdle_doesNotPlaySound() {
+        // Arrange - timer is idle (default state)
+
+        // Act
+        sut.selectSound(.whiteNoise)
+
+        // Assert - play should not be called when timer is idle
+        XCTAssertEqual(mockAmbientSoundService.playCallCount, 0)
+    }
+
+    func testSelectSound_whenTimerRunning_playsSelectedSound() {
+        // Arrange
+        let task = createTaskInCurrentTimeSlot()
+        modelContext.insert(task)
+        try? modelContext.save()
+
+        let loadExpectation = XCTestExpectation(description: "Task loaded")
+        sut.taskLoadedPublisher
+            .sink { _ in loadExpectation.fulfill() }
+            .store(in: &cancellables)
+
+        sut.loadCurrentTask()
+        wait(for: [loadExpectation], timeout: 1.0)
+        sut.handleTimerAction(.start)
+        mockAmbientSoundService.resetCallCounts()  // Reset counts after start
+
         // Act
         sut.selectSound(.whiteNoise)
 

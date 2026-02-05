@@ -372,6 +372,7 @@ final class HomeInteractor: HomeInteractorProtocol {
         do {
             try modelContext.save()
         } catch {
+            modelContext.rollback()
             errorSubject.send(.saveFailed(error.localizedDescription))
         }
     }

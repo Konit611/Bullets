@@ -141,6 +141,7 @@ final class DailyPlanInteractor: DailyPlanInteractorProtocol {
 
             loadDailyPlan(for: date)
         } catch {
+            modelContext.rollback()
             errorSubject.send(.saveFailed(error))
         }
     }
@@ -181,12 +182,16 @@ final class DailyPlanInteractor: DailyPlanInteractorProtocol {
             taskSavedSubject.send(())
             loadDailyPlan(for: date)
         } catch {
+            modelContext.rollback()
             errorSubject.send(.saveFailed(error))
         }
     }
 
     func deleteTask(id: UUID) {
-        guard let task = fetchTask(by: id) else { return }
+        guard let task = fetchTask(by: id) else {
+            errorSubject.send(.taskNotFound)
+            return
+        }
 
         let taskDate = task.startTime
 
@@ -198,6 +203,7 @@ final class DailyPlanInteractor: DailyPlanInteractorProtocol {
             taskDeletedSubject.send(())
             loadDailyPlan(for: taskDate)
         } catch {
+            modelContext.rollback()
             errorSubject.send(.saveFailed(error))
         }
     }
@@ -234,6 +240,7 @@ final class DailyPlanInteractor: DailyPlanInteractorProtocol {
         do {
             try modelContext.save()
         } catch {
+            modelContext.rollback()
             errorSubject.send(.saveFailed(error))
             return
         }
@@ -366,6 +373,7 @@ final class DailyPlanInteractor: DailyPlanInteractorProtocol {
         do {
             try modelContext.save()
         } catch {
+            modelContext.rollback()
             errorSubject.send(.saveFailed(error))
         }
     }
@@ -420,6 +428,7 @@ final class DailyPlanInteractor: DailyPlanInteractorProtocol {
         do {
             try modelContext.save()
         } catch {
+            modelContext.rollback()
             errorSubject.send(.saveFailed(error))
         }
     }

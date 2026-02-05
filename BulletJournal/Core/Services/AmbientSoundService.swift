@@ -8,6 +8,7 @@ import AVFoundation
 import Combine
 import os.log
 
+@MainActor
 final class AmbientSoundService: AmbientSoundServiceProtocol {
     private(set) var currentSound: AmbientSound = .none
     private(set) var isPlaying: Bool = false
@@ -117,17 +118,19 @@ final class AmbientSoundService: AmbientSoundServiceProtocol {
 
         fadeTimer = Timer.scheduledTimer(withTimeInterval: Crossfade.stepInterval, repeats: true) { [weak self] timer in
             guard let self else { timer.invalidate(); return }
-            step += 1
-            let progress = Float(step) / Float(steps)
+            MainActor.assumeIsolated {
+                step += 1
+                let progress = Float(step) / Float(steps)
 
-            self.audioPlayer?.volume = progress * self.targetVolume
-            self.fadingOutPlayer?.volume = fadeOutStart * (1 - progress)
+                self.audioPlayer?.volume = progress * self.targetVolume
+                self.fadingOutPlayer?.volume = fadeOutStart * (1 - progress)
 
-            if step >= steps {
-                timer.invalidate()
-                self.fadingOutPlayer?.stop()
-                self.fadingOutPlayer = nil
-                self.fadeTimer = nil
+                if step >= steps {
+                    timer.invalidate()
+                    self.fadingOutPlayer?.stop()
+                    self.fadingOutPlayer = nil
+                    self.fadeTimer = nil
+                }
             }
         }
     }
@@ -149,16 +152,18 @@ final class AmbientSoundService: AmbientSoundServiceProtocol {
 
         fadeTimer = Timer.scheduledTimer(withTimeInterval: Crossfade.stepInterval, repeats: true) { [weak self] timer in
             guard let self else { timer.invalidate(); return }
-            step += 1
-            let progress = Float(step) / Float(steps)
+            MainActor.assumeIsolated {
+                step += 1
+                let progress = Float(step) / Float(steps)
 
-            self.fadingOutPlayer?.volume = startVolume * (1 - progress)
+                self.fadingOutPlayer?.volume = startVolume * (1 - progress)
 
-            if step >= steps {
-                timer.invalidate()
-                self.fadingOutPlayer?.stop()
-                self.fadingOutPlayer = nil
-                self.fadeTimer = nil
+                if step >= steps {
+                    timer.invalidate()
+                    self.fadingOutPlayer?.stop()
+                    self.fadingOutPlayer = nil
+                    self.fadeTimer = nil
+                }
             }
         }
     }

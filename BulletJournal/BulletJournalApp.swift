@@ -7,10 +7,15 @@
 
 import SwiftUI
 import SwiftData
+import GoogleMobileAds
 
 @main
 struct BulletJournalApp: App {
     @StateObject private var localizationManager = LocalizationManager.shared
+
+    init() {
+        MobileAds.shared.start()
+    }
 
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([

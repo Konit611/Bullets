@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		C6141A502F4832C3004D0574 /* GoogleMobileAds in Frameworks */ = {isa = PBXBuildFile; productRef = C6141A4F2F4832C3004D0574 /* GoogleMobileAds */; };
 		C64DBC7E2F2DEA4B004ECC09 /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C64DBC7D2F2DEA4B004ECC09 /* WidgetKit.framework */; };
 		C64DBC802F2DEA4B004ECC09 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C64DBC7F2F2DEA4B004ECC09 /* SwiftUI.framework */; };
 		C64DBC8B2F2DEA4D004ECC09 /* BulletJournalWidgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = C64DBC7B2F2DEA4B004ECC09 /* BulletJournalWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
@@ -135,6 +136,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C6141A502F4832C3004D0574 /* GoogleMobileAds in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -219,6 +221,7 @@
 			);
 			name = BulletJournal;
 			packageProductDependencies = (
+				C6141A4F2F4832C3004D0574 /* GoogleMobileAds */,
 			);
 			productName = BulletJournal;
 			productReference = C624DAC92F26C6D400FBEB88 /* BulletJournal.app */;
@@ -329,6 +332,9 @@
 			);
 			mainGroup = C624DAC02F26C6D400FBEB88;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				C6141A4E2F483207004D0574 /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = C624DACA2F26C6D400FBEB88 /* Products */;
 			projectDirPath = "";
@@ -809,6 +815,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		C6141A4E2F483207004D0574 /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/googleads/swift-package-manager-google-mobile-ads";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 13.0.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		C6141A4F2F4832C3004D0574 /* GoogleMobileAds */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = C6141A4E2F483207004D0574 /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */;
+			productName = GoogleMobileAds;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = C624DAC12F26C6D400FBEB88 /* Project object */;
 }

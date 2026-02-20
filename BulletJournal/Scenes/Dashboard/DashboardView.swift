@@ -20,36 +20,40 @@ struct DashboardView: View {
 
     var body: some View {
         NavigationStack(path: $navigationPath) {
-            ScrollView(showsIndicators: false) {
-                VStack(alignment: .leading, spacing: 20) {
-                    // Title
-                    Text("dashboard.title")
-                        .font(.system(size: 32, weight: .bold))
-                        .foregroundStyle(AppColors.primaryText)
+            VStack(spacing: 0) {
+                ScrollView(showsIndicators: false) {
+                    VStack(alignment: .leading, spacing: 20) {
+                        // Title
+                        Text("dashboard.title")
+                            .font(.system(size: 32, weight: .bold))
+                            .foregroundStyle(AppColors.primaryText)
 
-                    // Total Focus Time Section
-                    sectionLabel("dashboard.totalFocusTime")
-                    TotalFocusTimeCard(viewModel: presenter.totalFocusTimeViewModel)
+                        // Total Focus Time Section
+                        sectionLabel("dashboard.totalFocusTime")
+                        TotalFocusTimeCard(viewModel: presenter.totalFocusTimeViewModel)
 
-                    // Weekly Chart Section
-                    sectionLabel("dashboard.focusTrend")
-                    WeeklyChartCard(viewModel: presenter.weeklyChartViewModel)
+                        // Weekly Chart Section
+                        sectionLabel("dashboard.focusTrend")
+                        WeeklyChartCard(viewModel: presenter.weeklyChartViewModel)
 
-                    // Daily Records Section
-                    sectionLabel("dashboard.dailyRecords")
-                    if presenter.dailyRecordViewModels.isEmpty {
-                        emptyRecordsCard
-                    } else {
-                        ForEach(presenter.dailyRecordViewModels) { record in
-                            DailyRecordRow(viewModel: record) {
-                                navigationPath.append(record.date)
+                        // Daily Records Section
+                        sectionLabel("dashboard.dailyRecords")
+                        if presenter.dailyRecordViewModels.isEmpty {
+                            emptyRecordsCard
+                        } else {
+                            ForEach(presenter.dailyRecordViewModels) { record in
+                                DailyRecordRow(viewModel: record) {
+                                    navigationPath.append(record.date)
+                                }
                             }
                         }
                     }
+                    .padding(.horizontal, 15)
+                    .padding(.top, 10)
+                    .padding(.bottom, 20)
                 }
-                .padding(.horizontal, 15)
-                .padding(.top, 10)
-                .padding(.bottom, 20)
+
+                BannerAdView()
             }
             .background(AppColors.background)
             .navigationDestination(for: Date.self) { date in

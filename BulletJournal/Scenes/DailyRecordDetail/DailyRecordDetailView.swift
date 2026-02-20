@@ -75,13 +75,13 @@ struct DailyRecordDetailView: View {
             }
         }
         .alert(
-            "Error",
+            Text("Error"),
             isPresented: .init(
                 get: { presenter.error != nil },
                 set: { if !$0 { presenter.clearError() } }
             )
         ) {
-            Button("OK") {
+            Button(String(localized: "OK")) {
                 presenter.clearError()
             }
         } message: {

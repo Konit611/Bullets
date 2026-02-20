@@ -48,6 +48,7 @@ struct SoundPickerView: View {
                         Image(systemName: "xmark")
                             .foregroundStyle(AppColors.primaryText)
                     }
+                    .accessibilityLabel(Text("accessibility.close"))
                 }
             }
         }

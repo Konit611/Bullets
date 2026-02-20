@@ -9,10 +9,10 @@ enum AppConfiguration {
     static let appGroupIdentifier = "group.com.geunil.BulletJournal"
 
     static var appGroupContainerURL: URL {
-        guard let url = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: appGroupIdentifier) else {
-            fatalError("App Group container not found for: \(appGroupIdentifier)")
+        if let url = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: appGroupIdentifier) {
+            return url
         }
-        return url
+        return FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
     }
 
     static var sharedStoreURL: URL {

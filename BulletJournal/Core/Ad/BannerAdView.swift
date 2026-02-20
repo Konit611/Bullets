@@ -50,7 +50,8 @@ private struct BannerAdRepresentable: UIViewRepresentable {
                let rootVC = windowScene.windows.first?.rootViewController {
                 bannerView.rootViewController = rootVC
 
-                let viewWidth = uiView.frame.width > 0 ? uiView.frame.width : UIScreen.main.bounds.width
+                let screenWidth = windowScene.screen.bounds.width
+                let viewWidth = uiView.frame.width > 0 ? uiView.frame.width : screenWidth
                 bannerView.adSize = largeAnchoredAdaptiveBanner(width: viewWidth)
                 bannerView.load(Request())
             }

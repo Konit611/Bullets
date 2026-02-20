@@ -38,7 +38,13 @@ struct BulletJournalApp: App {
         do {
             return try ModelContainer(for: schema, configurations: [modelConfiguration])
         } catch {
-            fatalError("Could not create ModelContainer: \(error)")
+            // Fallback to in-memory store if persistent store fails
+            let fallbackConfig = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
+            do {
+                return try ModelContainer(for: schema, configurations: [fallbackConfig])
+            } catch {
+                fatalError("Could not create ModelContainer: \(error)")
+            }
         }
     }()
 

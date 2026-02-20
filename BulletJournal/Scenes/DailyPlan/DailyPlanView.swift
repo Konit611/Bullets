@@ -58,7 +58,7 @@ struct DailyPlanView: View {
                     ),
                     isEditing: form.id != nil,
                     onSave: presenter.saveTask,
-                    onDelete: form.id != nil ? { presenter.deleteTask(id: form.id!) } : nil,
+                    onDelete: form.id.map { id in { presenter.deleteTask(id: id) } },
                     hasConflict: { presenter.hasTimeConflict($0) }
                 )
             }

@@ -76,6 +76,8 @@ struct SettingsView: View {
             settingsDivider
             soundLicenseRow
             settingsDivider
+            thirdPartyLicenseRow
+            settingsDivider
             emailRow
         }
         .background(AppColors.cardBackground)
@@ -105,6 +107,18 @@ struct SettingsView: View {
             SettingsRowView(
                 icon: "music.note",
                 title: "settings.soundLicense",
+                showChevron: true,
+                asLabel: true
+            )
+        }
+        .buttonStyle(.plain)
+    }
+
+    private var thirdPartyLicenseRow: some View {
+        NavigationLink(destination: ThirdPartyLicenseView()) {
+            SettingsRowView(
+                icon: "doc.text",
+                title: "settings.thirdPartyLicense",
                 showChevron: true,
                 asLabel: true
             )
@@ -172,7 +186,7 @@ struct SettingsView: View {
     // MARK: - Actions
 
     private func openPrivacyPolicy() {
-        guard let url = Settings.Configuration.privacyPolicyURL else { return }
+        guard let url = Settings.Configuration.privacyPolicyURL(for: localizationManager.currentLanguage) else { return }
         UIApplication.shared.open(url)
     }
 }

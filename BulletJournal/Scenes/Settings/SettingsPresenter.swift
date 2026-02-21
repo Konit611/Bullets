@@ -46,7 +46,7 @@ final class SettingsPresenter: ObservableObject {
             appVersion: response.appVersion,
             currentLanguageDisplay: response.currentLanguage,
             contactEmail: response.contactEmail,
-            isPrivacyPolicyAvailable: Settings.Configuration.privacyPolicyURL != nil
+            isPrivacyPolicyAvailable: true
         )
     }
 }

@@ -122,3 +122,6 @@ iOSInjectionProject/
 
 docs
 CLAUDE.md
+
+# Secrets
+*.xcconfig

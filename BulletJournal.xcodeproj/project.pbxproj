@@ -552,6 +552,8 @@
 		};
 		C624DAED2F26C6D600FBEB88 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReferenceAnchor = C624DACB2F26C6D400FBEB88 /* BulletJournal */;
+			baseConfigurationReferenceRelativePath = Config/TestSecrets.xcconfig;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -591,6 +593,8 @@
 		};
 		C624DAEE2F26C6D600FBEB88 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReferenceAnchor = C624DACB2F26C6D400FBEB88 /* BulletJournal */;
+			baseConfigurationReferenceRelativePath = Config/ReleaseSecrets.xcconfig;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
